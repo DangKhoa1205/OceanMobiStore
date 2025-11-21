@@ -1,122 +1,176 @@
 // frontend/src/pages/ProfilePage.js
 import React, { useState, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import axios from 'axios'; // <-- Nhớ import axios
 import { showToast } from '../redux/toastSlice';
-import './ProfilePage.css'; // Import CSS
+import { userUpdateProfile } from '../redux/userSlice'; 
+import './ProfilePage.css'; // Giả sử bạn có file css này
 
 function ProfilePage() {
+    const [hoTen, setHoTen] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    
     const [orders, setOrders] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const dispatch = useDispatch();
+    const [loadingOrders, setLoadingOrders] = useState(true);
+
     const navigate = useNavigate();
+    const dispatch = useDispatch();
 
     const { userInfo } = useSelector((state) => state.user);
 
+    // === 1. KHAI BÁO API URL CHUẨN ===
+    const API_URL = 'https://ocean-backend-lcpp.onrender.com';
+
     useEffect(() => {
-        // Nếu chưa đăng nhập, đá về trang login
         if (!userInfo) {
             navigate('/login');
+        } else {
+            setHoTen(userInfo.ho_ten || '');
+            setEmail(userInfo.email || '');
+            fetchMyOrders();
+        }
+    }, [userInfo, navigate]);
+
+    // === 2. HÀM LẤY DANH SÁCH ĐƠN HÀNG (Fix lỗi URL) ===
+    const fetchMyOrders = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const config = { headers: { Authorization: `Bearer ${token}` } };
+            
+            // Gọi API chuẩn:
+            const { data } = await axios.get(`${API_URL}/api/orders/myorders`, config);
+            setOrders(data);
+            setLoadingOrders(false);
+        } catch (error) {
+            console.error(error);
+            setLoadingOrders(false);
+            // Không show toast lỗi ở đây để tránh phiền nếu chưa có đơn nào
+        }
+    };
+
+    // === 3. HÀM CẬP NHẬT THÔNG TIN (Fix lỗi URL) ===
+    const submitHandler = async (e) => {
+        e.preventDefault();
+        if (password !== confirmPassword) {
+            dispatch(showToast({ message: 'Mật khẩu xác nhận không khớp', type: 'error' }));
             return;
         }
 
-        const fetchMyOrders = async () => {
-            try {
-                setLoading(true);
-                const token = localStorage.getItem('token');
-                const config = { headers: { 'Authorization': `Bearer ${token}` } };
+        try {
+            const token = localStorage.getItem('token');
+            const config = { headers: { Authorization: `Bearer ${token}` } };
 
-                // Gọi API mới
-                const { data } = await axios.get('https://ocean-backend-lcpp.onrender.com//api/orders/myorders', config);
-                setOrders(data);
-                setLoading(false);
-            } catch (err) {
-                const message = err.response?.data?.message || 'Lỗi khi tải lịch sử đơn hàng';
-                dispatch(showToast({ message, type: 'error' }));
-                setLoading(false);
-            }
-        };
+            const { data } = await axios.put(
+                `${API_URL}/api/users/profile`,
+                { ho_ten: hoTen, password }, // Backend thường không cho đổi email
+                config
+            );
 
-        fetchMyOrders();
-    }, [userInfo, navigate, dispatch]);
-
-    if (!userInfo) {
-        return null; // Đang redirect...
-    }
+            dispatch(userUpdateProfile(data)); // Cập nhật Redux
+            dispatch(showToast({ message: 'Cập nhật hồ sơ thành công!', type: 'success' }));
+            setPassword('');
+            setConfirmPassword('');
+            
+        } catch (error) {
+            const message = error.response?.data?.message || 'Lỗi cập nhật hồ sơ';
+            dispatch(showToast({ message: message, type: 'error' }));
+        }
+    };
 
     return (
-        <div className="main-container profile-page-container">
-            {/* Cột trái: Thông tin User */}
-            <div className="profile-info-box">
-                <h2>Hồ sơ của bạn</h2>
-                <div className="profile-info-item">
-                    <strong>Họ tên:</strong>
-                    <span>{userInfo.ho_ten}</span>
-                </div>
-                <div className="profile-info-item">
-                    <strong>Email:</strong>
-                    <span>{userInfo.email}</span>
-                </div>
-                {/* Bạn có thể thêm SĐT, Địa chỉ nếu đã lưu trong CSDL */}
-            </div>
-
-            {/* Cột phải: Lịch sử đơn hàng */}
-            <div className="profile-orders-box">
-                <h2>Lịch sử Đơn hàng</h2>
-                
-                {loading && <p>Đang tải đơn hàng...</p>}
-                
-                {!loading && orders.length === 0 && (
-                    <p>Bạn chưa có đơn hàng nào.</p>
-                )}
-
-                {orders.map(order => (
-                    <div key={order.id} className="order-history-item">
-                        {/* Header của đơn hàng */}
-                        <div className="order-history-header">
-                            <div className="header-info">
-                                <strong>Mã ĐH:</strong>
-                                <span>#{order.id}</span>
-                            </div>
-                            <div className="header-info">
-                                <strong>Ngày đặt:</strong>
-                                <span>{new Date(order.ngay_dat_hang).toLocaleDateString('vi-VN')}</span>
-                            </div>
-                            <div className="header-info">
-                                <strong>Tổng tiền:</strong>
-                                <span style={{color: '#d00', fontWeight: 'bold'}}>
-                                    {new Intl.NumberFormat('vi-VN').format(order.tong_tien)} đ
-                                </span>
-                            </div>
-                            <div className="header-info">
-                                <strong>Trạng thái:</strong>
-                                <span>{order.trang_thai}</span>
-                            </div>
+        <div className="main-container profile-page">
+            <div className="profile-container">
+                {/* CỘT TRÁI: CẬP NHẬT THÔNG TIN */}
+                <div className="profile-info-section">
+                    <h2>Hồ Sơ Của Tôi</h2>
+                    <form onSubmit={submitHandler}>
+                        <div className="form-group">
+                            <label>Họ tên:</label>
+                            <input 
+                                type="text" 
+                                value={hoTen} 
+                                onChange={(e) => setHoTen(e.target.value)} 
+                            />
                         </div>
-
-                        {/* Body (danh sách sản phẩm) */}
-                        <div className="order-history-body">
-                            {order.OrderItems.map(item => (
-                                <div key={item.product_id} className="order-product-item">
-                                    <img 
-                                        src={item.Product.hinh_anh_url} 
-                                        alt={item.Product.ten_san_pham}
-                                        className="order-product-img"
-                                    />
-                                    <div className="order-product-info">
-                                        <Link to={`/product/${item.Product.id}`}>
-                                            {item.Product.ten_san_pham}
-                                        </Link>
-                                        <p>
-                                            {item.so_luong} x {new Intl.NumberFormat('vi-VN').format(item.gia_luc_mua)} đ
-                                        </p>
-                                    </div>
-                                </div>
-                            ))}
+                        <div className="form-group">
+                            <label>Email (Không thể đổi):</label>
+                            <input 
+                                type="email" 
+                                value={email} 
+                                disabled 
+                                className="input-disabled"
+                            />
                         </div>
-                    </div>
-                ))}
+                        <div className="form-group">
+                            <label>Đổi Mật khẩu (Bỏ trống nếu không đổi):</label>
+                            <input 
+                                type="password" 
+                                value={password} 
+                                onChange={(e) => setPassword(e.target.value)} 
+                                placeholder="Nhập mật khẩu mới..."
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Xác nhận Mật khẩu:</label>
+                            <input 
+                                type="password" 
+                                value={confirmPassword} 
+                                onChange={(e) => setConfirmPassword(e.target.value)} 
+                                placeholder="Nhập lại mật khẩu mới..."
+                            />
+                        </div>
+                        <button type="submit" className="update-btn">Cập nhật</button>
+                    </form>
+                </div>
+
+                {/* CỘT PHẢI: LỊCH SỬ ĐƠN HÀNG */}
+                <div className="profile-orders-section">
+                    <h2>Đơn Hàng Của Tôi</h2>
+                    {loadingOrders ? (
+                        <p>Đang tải đơn hàng...</p>
+                    ) : orders.length === 0 ? (
+                        <p>Bạn chưa có đơn hàng nào.</p>
+                    ) : (
+                        <table className="orders-table">
+                            <thead>
+                                <tr>
+                                    <th>Mã Đơn</th>
+                                    <th>Ngày đặt</th>
+                                    <th>Tổng tiền</th>
+                                    <th>Thanh toán</th>
+                                    <th>Chi tiết</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {orders.map((order) => (
+                                    <tr key={order.id}>
+                                        <td>#{order.id}</td>
+                                        <td>{new Date(order.createdAt).toLocaleDateString('vi-VN')}</td>
+                                        <td>{new Intl.NumberFormat('vi-VN').format(order.tong_tien)} đ</td>
+                                        <td>
+                                            {order.trang_thai_thanh_toan ? (
+                                                <span className="badge-success">Đã thanh toán</span>
+                                            ) : (
+                                                <span className="badge-warning">Chưa thanh toán</span>
+                                            )}
+                                        </td>
+                                        <td>
+                                            <button 
+                                                className="btn-sm"
+                                                onClick={() => navigate(`/order/${order.id}`)}
+                                            >
+                                                Xem
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
+                </div>
             </div>
         </div>
     );
