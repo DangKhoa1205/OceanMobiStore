@@ -1,122 +1,131 @@
 // frontend/src/pages/admin/CategoryAdminPage.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react'; // <-- 1. Thêm useCallback
 import axios from 'axios';
-// Import CSS của form admin để dùng chung
-import './AdminForm.css'; 
-
-// CSS riêng cho danh sách
-const listStyles = {
-    listStyle: 'none',
-    padding: 0,
-    marginTop: '2rem'
-};
-const listItemStyles = {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '0.75rem',
-    border: '1px solid #ddd',
-    borderRadius: '8px',
-    marginBottom: '0.5rem'
-};
+import { useDispatch } from 'react-redux'; // <-- 2. Bỏ useSelector vì không dùng userInfo
+import { showToast } from '../../redux/toastSlice'; 
+import './CategoryAdminPage.css';
 
 function CategoryAdminPage() {
-    const [categories, setCategories] = useState([]); // Danh sách hãng
-    const [newName, setNewName] = useState(''); // Tên hãng mới
-    
+    const [categories, setCategories] = useState([]);
+    const [newCategory, setNewCategory] = useState('');
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
+    
+    const dispatch = useDispatch();
+    // Đã xóa dòng userInfo thừa
 
-    // Hàm tải danh sách các hãng đã có
-    const fetchCategories = async () => {
+    const API_URL = 'https://ocean-backend-lcpp.onrender.com';
+
+    // === 3. SỬA LỖI: Dùng useCallback để hàm này không bị tạo lại liên tục ===
+    const fetchCategories = useCallback(async () => {
         try {
-            setLoading(true);
-            const { data } = await axios.get('https://ocean-backend-lcpp.onrender.com//api/categories');
+            const { data } = await axios.get(`${API_URL}/api/categories`);
             setCategories(data);
-            setLoading(false);
-        } catch (err) {
-            setError('Lỗi khi tải danh sách hãng');
+        } catch (error) {
+            dispatch(showToast({ message: 'Lỗi khi tải danh sách hãng', type: 'error' }));
+        }
+    }, [dispatch, API_URL]); // Hàm này phụ thuộc vào dispatch và API_URL
+
+    // === 4. SỬA LỖI: Thêm fetchCategories vào mảng phụ thuộc ===
+    useEffect(() => {
+        fetchCategories();
+    }, [fetchCategories]);
+
+    const submitHandler = async (e) => {
+        e.preventDefault();
+        if (!newCategory.trim()) return;
+
+        setLoading(true);
+        try {
+            const token = localStorage.getItem('token');
+            const config = { headers: { Authorization: `Bearer ${token}` } };
+
+            await axios.post(
+                `${API_URL}/api/categories`,
+                { ten_danh_muc: newCategory },
+                config
+            );
+
+            dispatch(showToast({ message: 'Thêm hãng thành công!', type: 'success' }));
+            setNewCategory(''); 
+            fetchCategories(); // Tải lại danh sách
+        } catch (error) {
+            const message = error.response?.data?.message || 'Lỗi khi thêm hãng';
+            dispatch(showToast({ message: message, type: 'error' }));
+        } finally {
             setLoading(false);
         }
     };
 
-    // Chạy hàm tải khi component render
-    useEffect(() => {
-        fetchCategories();
-    }, []);
+    const deleteHandler = async (id) => {
+        if (window.confirm('Bạn có chắc chắn muốn xóa hãng này không?')) {
+            try {
+                const token = localStorage.getItem('token');
+                const config = { headers: { Authorization: `Bearer ${token}` } };
 
-    // Hàm xử lý khi nhấn nút "Thêm"
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        setError('');
-        setSuccess('');
-        try {
-            const token = localStorage.getItem('token');
-            const config = {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                }
-            };
-            
-            const { data } = await axios.post(
-                'https://ocean-backend-lcpp.onrender.com//api/categories',
-                { ten_danh_muc: newName },
-                config
-            );
-
-            setSuccess(data.message);
-            setLoading(false);
-            setNewName(''); // Xóa ô input
-            fetchCategories(); // Tải lại danh sách hãng
-
-        } catch (err) {
-            setError(err.response?.data?.message || 'Lỗi khi thêm hãng');
-            setLoading(false);
+                await axios.delete(`${API_URL}/api/categories/${id}`, config);
+                
+                dispatch(showToast({ message: 'Đã xóa hãng thành công', type: 'success' }));
+                fetchCategories();
+            } catch (error) {
+                const message = error.response?.data?.message || 'Lỗi khi xóa hãng';
+                dispatch(showToast({ message: message, type: 'error' }));
+            }
         }
     };
 
     return (
         <div className="main-container">
-            <h2 className="admin-form-title">Quản lý Hãng (Category)</h2>
+            <h1>Quản lý Hãng (Category)</h1>
             
-            {/* 1. Form Thêm Hãng Mới */}
-            <form onSubmit={handleSubmit} className="admin-form" style={{maxWidth: '500px'}}>
-                <div className="form-group">
-                    <label htmlFor="newName">Tên hãng mới:</label>
-                    <input
-                        id="newName"
-                        type="text"
-                        value={newName}
-                        onChange={(e) => setNewName(e.target.value)}
-                        placeholder="Ví dụ: Xiaomi"
-                        required
-                    />
+            <div className="admin-category-container">
+                <div className="category-form">
+                    <h3>Thêm Hãng Mới</h3>
+                    <form onSubmit={submitHandler}>
+                        <input 
+                            type="text" 
+                            placeholder="Nhập tên hãng (Ví dụ: Samsung)" 
+                            value={newCategory}
+                            onChange={(e) => setNewCategory(e.target.value)}
+                            className="category-input"
+                        />
+                        <button type="submit" className="add-btn" disabled={loading}>
+                            {loading ? 'Đang thêm...' : 'Thêm Hãng'}
+                        </button>
+                    </form>
                 </div>
-                <button type="submit" disabled={loading} className="admin-submit-button">
-                    {loading ? 'Đang thêm...' : 'Thêm Hãng Mới'}
-                </button>
-                {error && <p className="admin-form-error">{error}</p>}
-                {success && <p className="admin-form-success">{success}</p>}
-            </form>
-            
-            {/* 2. Danh sách các hãng đã có */}
-            <div className="admin-form" style={{maxWidth: '500px', marginTop: '3rem'}}>
-                <h3 style={{borderBottom: '1px solid #eee', paddingBottom: '10px'}}>Các Hãng Hiện Có</h3>
-                {loading ? (
-                    <p>Đang tải...</p>
-                ) : (
-                    <ul style={listStyles}>
-                        {categories.map((cat) => (
-                            <li key={cat.id} style={listItemStyles}>
-                                <span>{cat.ten_danh_muc}</span>
-                                <span>(ID: {cat.id})</span>
-                            </li>
-                        ))}
-                    </ul>
-                )}
+
+                <div className="category-list">
+                    <h3>Các Hãng Hiện Có</h3>
+                    {categories.length === 0 ? (
+                        <p>Chưa có hãng nào.</p>
+                    ) : (
+                        <table className="category-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Tên Hãng</th>
+                                    <th>Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {categories.map((cat) => (
+                                    <tr key={cat.id}>
+                                        <td>{cat.id}</td>
+                                        <td>{cat.ten_danh_muc}</td>
+                                        <td>
+                                            <button 
+                                                className="delete-btn"
+                                                onClick={() => deleteHandler(cat.id)}
+                                            >
+                                                Xóa
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
+                </div>
             </div>
         </div>
     );
