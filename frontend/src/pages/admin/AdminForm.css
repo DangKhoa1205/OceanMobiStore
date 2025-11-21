@@ -1,0 +1,103 @@
+/* frontend/src/pages/admin/AdminForm.css */
+
+.admin-form-title {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 1rem;
+}
+
+.admin-form {
+    max-width: 800px;
+    margin: 0 auto; /* Căn giữa form nếu container rộng hơn */
+}
+
+/* Tái sử dụng style .form-group từ trang Login/Register */
+.form-group {
+    margin-bottom: 1.25rem;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #555;
+}
+
+/* Định kiểu chung cho input, textarea, select */
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-sizing: border-box; /* Quan trọng */
+    font-family: inherit; /* Giữ font chữ */
+}
+
+.form-group textarea {
+    min-height: 120px;
+    resize: vertical; /* Cho phép kéo chiều cao */
+}
+
+/* Nút Submit */
+.admin-submit-button {
+    width: 100%;
+    padding: 0.8rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #fff;
+    background-color: #0066cc; /* Màu xanh dương (từ logo) */
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    margin-top: 1rem;
+}
+
+.admin-submit-button:disabled {
+    background-color: #ccc;
+}
+
+.admin-submit-button:hover:not(:disabled) {
+    background-color: #0056b3;
+}
+
+/* Thông báo Lỗi và Thành công */
+.admin-form-error {
+    color: #d00;
+    margin-top: 1rem;
+    background-color: #ffebee;
+    border: 1px solid #d00;
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.admin-form-success {
+    color: #28a745;
+    margin-top: 1rem;
+    background-color: #e8f5e9;
+    border: 1px solid #28a745;
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+/* Link quay lại */
+.admin-form-back-link {
+    display: inline-block;
+    margin-bottom: 1rem;
+    font-weight: 500;
+    color: #555;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+.admin-form-back-link:hover {
+    color: #0056b3;
+    text-decoration: none;
+}
+/* frontend/src/pages/admin/AdminForm.css (Thêm vào cuối file) */
+

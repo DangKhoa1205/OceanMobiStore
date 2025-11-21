@@ -1,0 +1,15 @@
+/* frontend/src/components/Rating.css */
+.rating {
+    margin: 0.5rem 0;
+}
+.rating span {
+    color: #f8e825; /* Màu vàng của sao */
+    font-size: 0.9rem;
+    margin-right: 2px;
+}
+.rating-text {
+    margin-left: 8px;
+    color: #555;
+    font-size: 0.9rem;
+    font-weight: 500;
+}

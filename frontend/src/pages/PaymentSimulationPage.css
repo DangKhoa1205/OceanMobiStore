@@ -1,0 +1,56 @@
+/* frontend/src/pages/PaymentSimulationPage.css */
+
+.payment-simulation-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    padding: 2rem;
+    text-align: center;
+}
+
+/* === XÓA SPINNER CSS CŨ === */
+/* (toàn bộ .payment-spinner và @keyframes spin đã bị xóa) */
+
+/* === THÊM STYLE CHO QR CODE === */
+.qr-code-wrapper {
+    padding: 20px; /* Thêm khoảng đệm trắng quanh QR */
+    background: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    margin-bottom: 1.5rem;
+}
+
+
+.payment-simulation-container h2 {
+    font-size: 1.8rem;
+    color: #333;
+    margin-bottom: 0.5rem; /* Giảm margin */
+}
+
+.payment-simulation-container p {
+    font-size: 1.1rem;
+    color: #777; /* Giảm màu chữ */
+    margin-bottom: 1.5rem;
+}
+.payment-confirm-button {
+    width: 100%;
+    max-width: 320px; /* Giới hạn chiều rộng nút */
+    padding: 0.9rem 1rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #fff;
+    /* Dùng màu xanh dương (primary) thay vì màu đỏ (danger) */
+    background-color: var(--primary-color, #0056b3); 
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    margin-top: 1.5rem;
+}
+
+.payment-confirm-button:hover {
+    background-color: #004a99; /* Màu xanh đậm hơn */
+}

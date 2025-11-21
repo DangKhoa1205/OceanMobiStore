@@ -1,0 +1,85 @@
+/* frontend/src/components/ConfirmModal.css */
+
+.modal-overlay {
+    position: fixed; /* Phủ toàn màn hình */
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.6); /* Lớp nền mờ */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000; /* Nằm trên tất cả */
+}
+
+.modal-box {
+    background-color: white;
+    padding: 2.5rem;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 450px;
+    text-align: center;
+    
+    /* Hiệu ứng */
+    transform: scale(0.95);
+    opacity: 0;
+    animation: modal-fade-in 0.2s ease forwards;
+}
+
+@keyframes modal-fade-in {
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.modal-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.modal-message {
+    font-size: 1rem;
+    color: #555;
+    margin-bottom: 2rem;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem; /* Khoảng cách giữa 2 nút */
+}
+
+/* Style chung cho nút */
+.modal-button {
+    border: none;
+    padding: 0.7rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+/* Nút Hủy (màu xám) */
+.modal-button-cancel {
+    background-color: #f1f1f1;
+    color: #555;
+    border: 1px solid #ddd;
+}
+.modal-button-cancel:hover {
+    background-color: #e7e7e7;
+}
+
+/* Nút Xóa (màu đỏ) */
+.modal-button-confirm {
+    background-color: var(--danger-color, #f44336); /* Dùng màu đỏ */
+    color: white;
+}
+.modal-button-confirm:hover {
+    background-color: #d32f2f; /* Đỏ đậm hơn */
+}

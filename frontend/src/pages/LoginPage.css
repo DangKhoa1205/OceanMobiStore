@@ -1,0 +1,126 @@
+/* frontend/src/pages/LoginPage.css */
+
+.login-page-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 70px); /* Lấy chiều cao màn hình trừ đi navbar */
+    background-color: #f4f7f6; /* Nền xám nhạt */
+}
+
+.login-form-box {
+    background: #ffffff;
+    padding: 2.5rem 3rem; /* Đệm nhiều hơn */
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    width: 100%;
+    max-width: 450px; /* Giới hạn chiều rộng form */
+    text-align: center;
+}
+
+.login-title {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 1.25rem;
+    text-align: left; /* Căn trái label */
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #555;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-sizing: border-box; /* Quan trọng để padding không làm vỡ layout */
+}
+
+.login-button {
+    width: 100%;
+    padding: 0.8rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #fff;
+    background-color: #0066cc; /* Màu xanh dương (từ logo) */
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    margin-top: 1rem;
+}
+
+.login-button:hover {
+    background-color: #0056b3;
+}
+
+.login-error {
+    color: #d00;
+    margin-top: 1rem;
+}
+
+/* Style cho các link bên dưới */
+.login-links {
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+}
+
+.login-links a {
+    color: #0066cc;
+    text-decoration: none;
+    margin: 0 5px;
+}
+
+.login-links a:hover {
+    text-decoration: underline;
+}
+
+/* Vạch chia "hoặc" */
+.divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 1.5rem 0;
+    color: #aaa;
+}
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #eee;
+}
+.divider:not(:empty)::before {
+    margin-right: .25em;
+}
+.divider:not(:empty)::after {
+    margin-left: .25em;
+}
+
+/* Căn giữa nút Google Login */
+.google-login-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+.login-helper-text {
+    font-size: 0.95rem;
+    color: #555;
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+    text-align: center; /* Căn giữa văn bản */
+}
+
+/* (Nếu bạn chưa có) Style cho nút khi bị vô hiệu hóa */
+.login-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}

@@ -1,0 +1,110 @@
+/* frontend/src/pages/CartPage.css */
+
+.cart-page-container {
+    display: flex;
+    flex-wrap: wrap; /* Cho phép xuống hàng trên mobile */
+    gap: 2rem;
+    padding: 2rem;
+}
+
+/* Cột trái: Danh sách sản phẩm */
+.cart-items-list {
+    flex: 2; /* Chiếm 2 phần */
+    min-width: 320px;
+}
+
+.cart-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #eee;
+}
+.cart-item:last-child {
+    border-bottom: none;
+}
+
+.cart-item-img {
+    width: 90px;
+    height: 90px;
+    object-fit: contain;
+    border: 1px solid #f0f0f0;
+    border-radius: 8px;
+}
+
+.cart-item-info {
+    flex: 1;
+}
+.cart-item-info h4 {
+    margin: 0 0 5px 0;
+}
+.cart-item-info a {
+    text-decoration: none;
+    color: #333;
+}
+.cart-item-info a:hover {
+    color: var(--primary-color, #0056b3);
+}
+
+.cart-item-price {
+    font-weight: 500;
+    width: 120px;
+    text-align: right;
+}
+
+.cart-item-qty {
+    width: 50px;
+    padding: 5px;
+    text-align: center;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.cart-item-remove {
+    background: none;
+    border: none;
+    color: var(--danger-color, #d00);
+    cursor: pointer;
+    font-size: 0.9rem;
+    text-decoration: underline;
+}
+
+/* Cột phải: Tổng cộng */
+.cart-summary {
+    flex: 1; /* Chiếm 1 phần */
+    min-width: 300px;
+    background: #f9f9f9;
+    border: 1px solid #eee;
+    padding: 1.5rem;
+    border-radius: 8px;
+    height: fit-content; /* Chỉ cao bằng nội dung */
+    position: sticky;
+    top: 90px;
+}
+.cart-summary h2 {
+    margin-top: 0;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 1rem;
+}
+.cart-summary-total {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--danger-color, #d00);
+    margin: 1.5rem 0;
+}
+.cart-checkout-button {
+    width: 100%;
+    padding: 0.8rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #fff;
+    background-color: var(--danger-color, #d00);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+.cart-checkout-button:hover {
+    background-color: #a00;
+}

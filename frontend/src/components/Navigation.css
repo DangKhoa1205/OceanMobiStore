@@ -1,0 +1,155 @@
+/* frontend/src/components/Navigation.css */
+
+.navbar {
+    display: flex;
+    justify-content: space-between; /* Đẩy logo sang trái, link sang phải */
+    align-items: center;
+    padding: 0 40px; /* Đệm 2 bên */
+    height: 65px; /* Chiều cao cố định */
+    background-color: #ffffff; /* Nền trắng */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Đổ bóng nhẹ */
+    position: sticky; /* Dính trên cùng khi cuộn */
+    top: 0;
+    z-index: 1000;
+}
+
+/* 1. Thiết kế Logo (theo yêu cầu) */
+.navbar-logo {
+    font-size: 1.6rem; /* Cỡ chữ to */
+    font-weight: 700;
+    color: #0056b3; /* Màu xanh "Ocean" */
+    text-decoration: none; /* Bỏ gạch chân */
+}
+
+/* 2. Thiết kế các link điều hướng */
+.navbar-links {
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Khoảng cách giữa các link */
+}
+
+.navbar-links a {
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    padding: 8px 12px;
+    border-radius: 5px;
+    transition: background-color 0.2s ease;
+}
+
+.navbar-links a:hover {
+    background-color: #f4f4f4; /* Hiệu ứng hover */
+}
+
+/* 3. Làm nổi bật link Giỏ hàng */
+.navbar-links a.cart-link {
+    background-color: #0066cc; /* Màu xanh nổi bật */
+    color: white;
+    font-weight: bold;
+}
+
+.navbar-links a.cart-link:hover {
+    background-color: #0056b3; /* Đậm hơn khi hover */
+}
+
+/* 4. Nút Đăng Xuất */
+.logout-button {
+    background-color: #f44336; /* Màu đỏ */
+    color: white;
+    border: none;
+    padding: 9px 15px; /* Hơi to hơn link 1 chút */
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: background-color 0.2s ease;
+}
+
+.logout-button:hover {
+    background-color: #d32f2f; /* Đậm hơn khi hover */
+}
+.navbar-logo .logo-image {
+    height: 40px; /* <-- Chỉnh chiều cao logo tại đây */
+    
+    width: auto; /* Tự động tính chiều rộng */
+    vertical-align: middle; /* Giúp logo căn giữa thẳng hàng với các link */
+}
+
+/* (Tùy chọn) Có thể bạn muốn navbar cao hơn một chút */
+.navbar {
+    /* ... (các style cũ) ... */
+    padding: 10px 2rem; /* Tăng padding dọc (nếu cần) */
+    align-items: center; /* Đảm bảo mọi thứ căn giữa */
+}
+/* 1. Sửa style cho .navbar-logo (container) */
+.navbar-logo {
+    display: flex;         /* Bật Flexbox */
+    align-items: center;   /* Căn giữa theo chiều dọc */
+    gap: 10px;             /* Khoảng cách giữa logo và chữ */
+    text-decoration: none; /* Bỏ gạch chân link */
+}
+
+/* 2. Style cho logo-image (bạn đã có từ bước trước) */
+.navbar-logo .logo-image {
+    height: 80px; 
+    width: auto;
+}
+
+/* 3. Style cho chữ logo-text (mới) */
+.navbar-logo .logo-text {
+    font-size: 1.3rem;     /* Cỡ chữ (điều chỉnh nếu cần) */
+    font-weight: 700;      /* In đậm */
+    color: #0099FF;           /* Màu chữ (hoặc màu logo của bạn) */
+}
+.search-bar {
+    display: flex;
+    align-items: center;
+    background-color: #f4f4f4;
+    border-radius: 20px;
+    padding: 5px 8px;
+    margin: 0 1rem; /* Khoảng cách với các link */
+    flex: 1; /* Cho phép co giãn */
+    max-width: 400px; /* Giới hạn chiều rộng */
+}
+
+/* Ô input */
+.search-input {
+    border: none;
+    background: transparent;
+    outline: none;
+    padding: 8px;
+    font-size: 0.95rem;
+    flex: 1; /* Chiếm hết phần còn lại */
+}
+
+/* Nút bấm */
+.search-button {
+    background: var(--primary-color, #0056b3);
+    border: none;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 50%; /* Bo tròn nút */
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    transition: background-color 0.2s;
+}
+
+.search-button:hover {
+    background-color: #004a99;
+}
+.profile-link {
+    font-weight: bold;
+    color: #333;
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+    margin-right: 5px;
+    display: inline-block;
+}
+
+.profile-link:hover {
+    background-color: #e0e0e0; /* Hiệu ứng nền xám khi di chuột vào */
+    color: #000;
+}

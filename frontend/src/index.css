@@ -1,0 +1,65 @@
+/* frontend/src/index.css */
+
+/* 1. Import font chữ Roboto từ Google */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+/* 2. Định nghĩa các biến màu toàn cục */
+:root {
+  --primary-color: #0056b3; /* Màu xanh của logo OceanMobiStore */
+  --primary-hover: #004494; /* Màu khi hover */
+  --text-color: #333;
+  --light-gray-bg: #f4f7f6; /* Màu nền xám rất nhạt */
+  --white-bg: #ffffff;
+  --border-color: #ddd;
+  --danger-color: #f44336; /* Màu đỏ cho nút Xóa/Đăng xuất */
+}
+
+/* 3. Reset CSS cơ bản */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Roboto', sans-serif; /* Áp dụng font Roboto */
+  margin: 0;
+  background-color: var(--light-gray-bg); /* Dùng màu nền xám nhạt */
+  color: var(--text-color);
+  line-height: 1.6;
+}
+
+a {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+h1, h2, h3, h4 {
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+/* 4. Class layout chính */
+/* Class này sẽ bọc nội dung các trang 
+   để căn giữa và tạo nền trắng cho nội dung */
+.main-container {
+  max-width: 1300px;
+  margin: 2rem auto; /* Tự động căn giữa */
+  padding: 2rem;
+  background-color: var(--white-bg);
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  min-height: 70vh; /* Đảm bảo nội dung luôn đủ cao để đẩy footer xuống */
+}
+
+/* Ghi đè lại style của card sản phẩm để hợp với nền mới */
+/* (Bạn có thể bỏ qua phần này nếu ProductCard.css đã đẹp) */
+.product-card-styles { 
+  /* (Giả sử bạn đổi tên style trong ProductCard.js) */
+  border: 1px solid var(--border-color);
+  box-shadow: none; /* Bỏ shadow vì nền đã đẹp */
+}

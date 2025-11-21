@@ -1,0 +1,40 @@
+/* frontend/src/components/ScrollToTopButton.css */
+
+.scroll-to-top-button {
+    position: fixed; /* Giữ cố định trên màn hình */
+    bottom: 25px; /* Cách đáy 25px */
+    right: 25px; /* Cách bên phải 25px */
+    
+    width: 50px;
+    height: 50px;
+    
+    background-color: var(--primary-color, #0056b3); /* Dùng màu xanh chính */
+    color: white;
+    
+    border: none;
+    border-radius: 50%; /* Bo tròn */
+    
+    font-size: 24px; /* Kích cỡ mũi tên */
+    font-weight: bold;
+    line-height: 50px; /* Căn giữa mũi tên theo chiều dọc */
+    text-align: center;
+    
+    cursor: pointer;
+    z-index: 999; /* Nằm trên hầu hết, nhưng dưới Navbar (1000) */
+    
+    opacity: 0; /* Mặc định ẩn đi */
+    visibility: hidden;
+    transform: translateY(20px); /* Hiệu ứng trượt lên */
+    
+    transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+}
+
+.scroll-to-top-button.visible {
+    opacity: 1; /* Hiển thị khi có class 'visible' */
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.scroll-to-top-button:hover {
+    background-color: var(--primary-hover, #004494); /* Màu đậm hơn khi hover */
+}

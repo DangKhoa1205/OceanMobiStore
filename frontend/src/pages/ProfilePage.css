@@ -1,0 +1,129 @@
+/* frontend/src/pages/ProfilePage.css */
+.profile-page-container {
+    display: flex;
+    flex-wrap: wrap; /* Xuống hàng trên mobile */
+    gap: 2rem;
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    min-height: 60vh;
+}
+
+/* Cột trái: Thông tin User */
+.profile-info-box {
+    flex: 1;
+    min-width: 300px;
+    background: #fff;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    height: fit-content; /* Chỉ cao bằng nội dung */
+}
+
+.profile-info-box h2 {
+    margin-top: 0;
+    font-size: 1.8rem;
+    font-weight: 600;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.profile-info-item {
+    display: flex;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+}
+.profile-info-item strong {
+    color: #333;
+    width: 100px; /* Căn lề */
+}
+.profile-info-item span {
+    color: #555;
+    word-break: break-all; /* Ngăn email dài làm vỡ layout */
+}
+
+/* Cột phải: Lịch sử đơn hàng */
+.profile-orders-box {
+    flex: 2.5; /* Rộng hơn */
+    min-width: 400px;
+}
+
+.profile-orders-box h2 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+}
+
+/* Style cho từng đơn hàng */
+.order-history-item {
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.order-history-header {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    background: #f9f9f9;
+    border-bottom: 1px solid #eee;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+.header-info {
+    font-size: 0.95rem;
+}
+.header-info strong {
+    color: #333;
+}
+.header-info span {
+    color: #555;
+    margin-left: 5px;
+}
+
+.order-history-body {
+    padding: 1.5rem;
+}
+
+.order-product-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px dashed #f0f0f0;
+}
+.order-product-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.order-product-img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid #eee;
+}
+
+.order-product-info a {
+    font-weight: 600;
+    color: var(--primary-color, #0056b3);
+    text-decoration: none;
+}
+.order-product-info a:hover {
+    text-decoration: underline;
+}
+.order-product-info p {
+    font-size: 0.9rem;
+    color: #777;
+    margin: 5px 0 0;
+}
