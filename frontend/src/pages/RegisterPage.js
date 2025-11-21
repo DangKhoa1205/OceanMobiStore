@@ -1,88 +1,116 @@
 // frontend/src/pages/RegisterPage.js
-
-import React, { useState } from 'react';
-import axios from 'axios';
-import { useNavigate, Link } from 'react-router-dom';
-import './RegisterPage.css'; // <-- 1. IMPORT FILE CSS MỚI
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import axios from 'axios'; // <-- Đã import axios
+import { userLogin } from '../redux/userSlice';
+import { showToast } from '../redux/toastSlice';
+import './RegisterPage.css';
 
 function RegisterPage() {
+    const [hoTen, setHoTen] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [hoTen, setHoTen] = useState('');
+    // State hiển thị lỗi
     const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
-    const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
 
-    const handleSubmit = async (e) => {
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    const { userInfo } = useSelector((state) => state.user);
+    const redirect = location.search ? location.search.split('=')[1] : '/';
+
+    // Nếu đã đăng nhập thì đá về trang chủ
+    useEffect(() => {
+        if (userInfo) {
+            navigate(redirect);
+        }
+    }, [navigate, userInfo, redirect]);
+
+    // === QUAN TRỌNG: LINK API RENDER ===
+    const API_URL = 'https://ocean-backend.onrender.com';
+
+    const submitHandler = async (e) => {
         e.preventDefault();
+        setLoading(true);
         setError('');
-        setSuccess('');
 
         try {
-            const response = await axios.post('https://ocean-backend-lcpp.onrender.com//api/auth/register', {
-                email,
-                password,
-                ho_ten: hoTen
-            });
+            // 1. Gọi API Đăng ký (Sử dụng link Online)
+            const { data } = await axios.post(
+                `${API_URL}/api/auth/register`, 
+                { ho_ten: hoTen, email, password }
+            );
 
-            setSuccess(response.data.message + " Bạn sẽ được chuyển đến trang đăng nhập sau 3 giây.");
+            // 2. Đăng ký thành công -> Tự động đăng nhập luôn
+            dispatch(userLogin(data));
+            dispatch(showToast({ message: 'Đăng ký thành công!', type: 'success' }));
             
-            setTimeout(() => {
-                navigate('/login');
-            }, 3000);
+            // 3. Chuyển hướng
+            navigate(redirect);
 
         } catch (err) {
-            setError(err.response?.data?.message || 'Lỗi đăng ký');
+            // Xử lý lỗi trả về từ Backend
+            const message = err.response && err.response.data.message
+                ? err.response.data.message
+                : 'Lỗi đăng ký, vui lòng thử lại';
+            setError(message);
+            dispatch(showToast({ message: message, type: 'error' }));
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
-        <div className="register-page-container">
+        <div className="register-container">
             <div className="register-form-box">
                 <h2 className="register-title">Tạo Tài Khoản</h2>
                 
-                <form onSubmit={handleSubmit} className="register-form">
+                <form onSubmit={submitHandler}>
                     <div className="form-group">
-                        <label htmlFor="hoTen">Họ tên:</label>
-                        <input
-                            id="hoTen"
-                            type="text"
-                            value={hoTen}
-                            onChange={(e) => setHoTen(e.target.value)}
-                            required
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor="email">Email:</label>
-                        <input
-                            id="email"
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor="password">Mật khẩu:</label>
-                        <input
-                            id="password"
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
+                        <label>Họ tên:</label>
+                        <input 
+                            type="text" 
+                            value={hoTen} 
+                            onChange={(e) => setHoTen(e.target.value)} 
+                            required 
+                            placeholder="Nhập họ tên của bạn"
                         />
                     </div>
 
-                    {/* Hiển thị lỗi hoặc thành công */}
-                    {error && <p className="register-error">{error}</p>}
-                    {success && <p className="register-success">{success}</p>}
-                    
-                    <button type="submit" className="register-button">Đăng ký</button>
+                    <div className="form-group">
+                        <label>Email:</label>
+                        <input 
+                            type="email" 
+                            value={email} 
+                            onChange={(e) => setEmail(e.target.value)} 
+                            required 
+                            placeholder="example@email.com"
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label>Mật khẩu:</label>
+                        <input 
+                            type="password" 
+                            value={password} 
+                            onChange={(e) => setPassword(e.target.value)} 
+                            required 
+                            placeholder="Nhập mật khẩu..."
+                        />
+                    </div>
+
+                    {error && <div className="error-message">{error}</div>}
+
+                    <button type="submit" className="register-button" disabled={loading}>
+                        {loading ? 'Đang xử lý...' : 'Đăng ký'}
+                    </button>
                 </form>
 
-                {/* Link quay lại Đăng nhập */}
-                <div className="register-links">
-                    <Link to="/login">Bạn đã có tài khoản? Đăng nhập ngay</Link>
+                <div className="register-footer">
+                    Bạn đã có tài khoản? <Link to={redirect === '/' ? '/login' : `/login?redirect=${redirect}`}>Đăng nhập ngay</Link>
                 </div>
             </div>
         </div>
