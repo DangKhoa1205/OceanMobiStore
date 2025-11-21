@@ -6,63 +6,61 @@ import { GoogleLogin } from '@react-oauth/google';
 import './LoginPage.css'; 
 import { useDispatch } from 'react-redux';
 import { userLogin } from '../redux/userSlice'; 
-import { showToast } from '../redux/toastSlice'; // <-- Import đã đúng
+import { showToast } from '../redux/toastSlice'; 
 
 function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    // const [error, setError] = useState(''); // <-- Không cần state lỗi này nữa
-    const [loading, setLoading] = useState(false); // <-- Thêm state loading
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const dispatch = useDispatch(); 
+
+    // === 1. KHAI BÁO API URL CHUẨN ===
+    const API_URL = 'https://ocean-backend-lcpp.onrender.com';
 
     // Hàm xử lý đăng nhập thường
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true); // Bắt đầu loading
+        setLoading(true); 
         try {
-            const { data } = await axios.post('https://ocean-backend-lcpp.onrender.com//api/auth/login', {
+            // === 2. SỬA LỖI: Dùng API_URL + đường dẫn (không còn //) ===
+            const { data } = await axios.post(`${API_URL}/api/auth/login`, {
                 email,
                 password
             });
-            localStorage.setItem('token', data.token);
             
+            localStorage.setItem('token', data.token);
             dispatch(userLogin(data.user)); 
-
-            // === 1. THAY THẾ ALERT BẰNG TOAST ===
             dispatch(showToast({ message: 'Đăng nhập thành công!', type: 'success' }));
             
             navigate('/'); 
         } catch (err) {
-            // === 2. THAY THẾ SETERROR BẰNG TOAST ===
             const message = err.response?.data?.message || 'Lỗi đăng nhập';
             dispatch(showToast({ message: message, type: 'error' }));
         } finally {
-            setLoading(false); // Dừng loading
+            setLoading(false);
         }
     };
 
     // Hàm xử lý đăng nhập Google
     const handleGoogleLoginSuccess = async (credentialResponse) => {
         const googleToken = credentialResponse.credential;
-        setLoading(true); // Bắt đầu loading
+        setLoading(true);
         try {
-            const { data } = await axios.post('https://ocean-backend-lcpp.onrender.com//api/auth/google-login', {
+            // === 3. SỬA LỖI: Dùng API_URL ở đây nữa ===
+            const { data } = await axios.post(`${API_URL}/api/auth/google-login`, {
                 googleToken: googleToken,
             });
-            localStorage.setItem('token', data.token);
             
+            localStorage.setItem('token', data.token);
             dispatch(userLogin(data.user));
-
-            // === 3. THAY THẾ ALERT BẰNG TOAST ===
             dispatch(showToast({ message: 'Đăng nhập bằng Google thành công!', type: 'success' }));
             
             navigate('/');
         } catch (err) {
-            // === 4. THAY THẾ SETERROR BẰNG TOAST ===
             dispatch(showToast({ message: 'Lỗi đăng nhập bằng Google.', type: 'error' }));
         } finally {
-            setLoading(false); // Dừng loading
+            setLoading(false);
         }
     };
 
@@ -75,7 +73,6 @@ function LoginPage() {
                     <GoogleLogin
                         onSuccess={handleGoogleLoginSuccess}
                         onError={() => {
-                            // === 5. THAY THẾ SETERROR BẰNG TOAST ===
                             dispatch(showToast({ message: 'Đăng nhập Google thất bại.', type: 'error' }));
                         }}
                     />
@@ -104,9 +101,6 @@ function LoginPage() {
                             required
                         />
                     </div>
-
-                    {/* === 6. KHÔNG CẦN HIỂN THỊ LỖI Ở ĐÂY NỮA === */}
-                    {/* {error && <p className="login-error">{error}</p>} */}
 
                     <button type="submit" className="login-button" disabled={loading}>
                         {loading ? 'Đang xử lý...' : 'Đăng nhập'}
