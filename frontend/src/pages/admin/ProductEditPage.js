@@ -1,139 +1,185 @@
 // frontend/src/pages/admin/ProductEditPage.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate, useParams, Link } from 'react-router-dom';
-import './AdminForm.css'; // <-- 1. IMPORT CSS MỚI
+import { useNavigate, useParams } from 'react-router-dom';
+import { useDispatch } from 'react-redux'; 
+import { showToast } from '../../redux/toastSlice'; // Import Toast thông báo
+import './ProductEditPage.css'; // Import CSS
 
 function ProductEditPage() {
-    const { id: productId } = useParams();
+    // Lấy ID sản phẩm từ trên thanh địa chỉ URL
+    const { id } = useParams();
     
-    // (State của bạn giữ nguyên)
+    // Các biến lưu trữ dữ liệu form
     const [tenSanPham, setTenSanPham] = useState('');
-    const [moTa, setMoTa] = useState('');
     const [gia, setGia] = useState(0);
-    const [soLuongTon, setSoLuongTon] = useState(0);
     const [hinhAnhUrl, setHinhAnhUrl] = useState('');
+    const [moTa, setMoTa] = useState('');
+    const [soLuongTon, setSoLuongTon] = useState(0);
     const [categoryId, setCategoryId] = useState('');
+    
+    // Danh sách hãng để chọn
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
+
     const navigate = useNavigate();
+    const dispatch = useDispatch();
 
-    // (useEffect để tải Categories và Product giữ nguyên)
+    // === 1. KHAI BÁO API URL CHUẨN (Không có dấu / ở cuối) ===
+    const API_URL = 'https://ocean-backend-lcpp.onrender.com';
+
     useEffect(() => {
-        // (Code tải categories...)
-        const fetchCategories = async () => {
+        const fetchData = async () => {
             try {
-                const { data } = await axios.get('https://ocean-backend-lcpp.onrender.com//api/categories');
-                setCategories(data);
-            } catch (err) { /*...*/ }
-        };
+                // === 2. TẢI DỮ LIỆU (Dùng Promise.all để tải song song cho nhanh) ===
+                const [productRes, categoriesRes] = await Promise.all([
+                    axios.get(`${API_URL}/api/products/${id}`), // Lấy thông tin SP
+                    axios.get(`${API_URL}/api/categories`)      // Lấy danh sách Hãng
+                ]);
 
-        const fetchProductDetails = async () => {
-            try {
-                setLoading(true);
-                const { data } = await axios.get(`https://ocean-backend-lcpp.onrender.com//api/products/${productId}`);
-                setTenSanPham(data.ten_san_pham);
-                setMoTa(data.mo_ta);
-                setGia(data.gia);
-                setSoLuongTon(data.so_luong_ton);
-                setHinhAnhUrl(data.hinh_anh_url);
-                setCategoryId(data.category_id);
-                setLoading(false);
-            } catch (err) {
-                setError('Không tìm thấy sản phẩm');
-                setLoading(false);
+                const product = productRes.data;
+                const cats = categoriesRes.data;
+
+                // Điền dữ liệu cũ vào các ô nhập
+                setTenSanPham(product.ten_san_pham);
+                setGia(product.gia);
+                setHinhAnhUrl(product.hinh_anh_url);
+                setMoTa(product.mo_ta);
+                setSoLuongTon(product.so_luong_ton);
+                
+                // Chọn hãng cũ (nếu hãng đó bị xóa thì chọn cái đầu tiên)
+                setCategoryId(product.category_id || (cats.length > 0 ? cats[0].id : ''));
+                setCategories(cats);
+
+            } catch (error) {
+                dispatch(showToast({ message: 'Lỗi khi tải dữ liệu sản phẩm', type: 'error' }));
             }
         };
-        fetchCategories();
-        fetchProductDetails();
-    }, [productId]);
 
-    // (Hàm handleSubmit giữ nguyên)
-    const handleSubmit = async (e) => {
+        fetchData();
+    }, [id, dispatch]);
+
+    const submitHandler = async (e) => {
         e.preventDefault();
         setLoading(true);
-        setError('');
-        setSuccess('');
+
         try {
             const token = localStorage.getItem('token');
-            const config = {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                }
-            };
-            const { data } = await axios.put(
-                `https://ocean-backend-lcpp.onrender.com//api/products/${productId}`,
-                { 
+            const config = { headers: { Authorization: `Bearer ${token}` } };
+
+            // === 3. GỬI YÊU CẦU CẬP NHẬT (PUT) ===
+            await axios.put(
+                `${API_URL}/api/products/${id}`,
+                {
                     ten_san_pham: tenSanPham,
-                    mo_ta: moTa,
                     gia: Number(gia),
-                    so_luong_ton: Number(soLuongTon),
                     hinh_anh_url: hinhAnhUrl,
-                    category_id: Number(categoryId)
+                    mo_ta: moTa,
+                    so_luong_ton: Number(soLuongTon),
+                    category_id: categoryId
                 },
                 config
             );
-            setSuccess(data.message + " (Sẽ quay về trang chủ sau 2s)");
-            setLoading(false);
-            setTimeout(() => {
-                navigate('/');
-            }, 2000);
-        } catch (err) {
-            setError(err.response?.data?.message || 'Lỗi khi cập nhật');
+
+            dispatch(showToast({ message: 'Cập nhật sản phẩm thành công!', type: 'success' }));
+            navigate('/admin/products'); // Quay về trang quản lý
+        } catch (error) {
+            const message = error.response?.data?.message || 'Lỗi khi cập nhật sản phẩm';
+            dispatch(showToast({ message: message, type: 'error' }));
+        } finally {
             setLoading(false);
         }
     };
 
-    if (loading) return <div className="main-container">Đang tải...</div>;
-
     return (
-        // 2. SỬ DỤNG LAYOUT CHUNG
         <div className="main-container">
-            <Link to="/" className="admin-form-back-link">← Quay lại Trang chủ</Link>
-            <h2 className="admin-form-title">Sửa Sản Phẩm (ID: {productId})</h2>
-            
-            {/* 3. ÁP DỤNG CLASSNAME CHO FORM */}
-            <form onSubmit={handleSubmit} className="admin-form">
-                <div className="form-group">
-                    <label htmlFor="tenSanPham">Tên sản phẩm:</label>
-                    <input id="tenSanPham" type="text" value={tenSanPham} onChange={(e) => setTenSanPham(e.target.value)} required />
-                </div>
-                <div className="form-group">
-                    <label htmlFor="moTa">Mô tả:</label>
-                    <textarea id="moTa" value={moTa || ''} onChange={(e) => setMoTa(e.target.value)} />
-                </div>
-                <div className="form-group">
-                    <label htmlFor="gia">Giá:</label>
-                    <input id="gia" type="number" value={gia} onChange={(e) => setGia(e.target.value)} required />
-                </div>
-                <div className="form-group">
-                    <label htmlFor="soLuongTon">Số lượng tồn:</label>
-                    <input id="soLuongTon" type="number" value={soLuongTon} onChange={(e) => setSoLuongTon(e.target.value)} />
-                </div>
-                <div className="form-group">
-                    <label htmlFor="hinhAnhUrl">Link hình ảnh:</label>
-                    <input id="hinhAnhUrl" type="text" value={hinhAnhUrl || ''} onChange={(e) => setHinhAnhUrl(e.target.value)} />
-                </div>
-                <div className="form-group">
-                    <label htmlFor="category">Hãng:</label>
-                    <select id="category" value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
-                        {categories.map((cat) => (
-                            <option key={cat.id} value={cat.id}>
-                                {cat.ten_danh_muc}
-                            </option>
-                        ))}
-                    </select>
-                </div>
+            <div className="edit-product-container">
+                <h1>Sửa Sản Phẩm #{id}</h1>
+                
+                <form onSubmit={submitHandler}>
+                    <div className="form-group">
+                        <label>Tên sản phẩm:</label>
+                        <input 
+                            type="text" 
+                            value={tenSanPham} 
+                            onChange={(e) => setTenSanPham(e.target.value)} 
+                            required 
+                        />
+                    </div>
 
-                <button type="submit" disabled={loading} className="admin-submit-button">
-                    {loading ? 'Đang cập nhật...' : 'Cập nhật Sản Phẩm'}
-                </button>
-                {error && <p className="admin-form-error">{error}</p>}
-                {success && <p className="admin-form-success">{success}</p>}
-            </form>
+                    <div className="form-group">
+                        <label>Giá (VNĐ):</label>
+                        <input 
+                            type="number" 
+                            value={gia} 
+                            onChange={(e) => setGia(e.target.value)} 
+                            required 
+                            min="0"
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label>Link hình ảnh (URL):</label>
+                        <input 
+                            type="text" 
+                            value={hinhAnhUrl} 
+                            onChange={(e) => setHinhAnhUrl(e.target.value)} 
+                            required 
+                        />
+                        {hinhAnhUrl && (
+                            <div className="image-preview-box">
+                                <p>Ảnh hiện tại:</p>
+                                <img src={hinhAnhUrl} alt="Preview" />
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="form-group">
+                        <label>Hãng sản xuất:</label>
+                        <select 
+                            value={categoryId} 
+                            onChange={(e) => setCategoryId(e.target.value)}
+                            required
+                        >
+                            {categories.map(cat => (
+                                <option key={cat.id} value={cat.id}>
+                                    {cat.ten_danh_muc}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="form-group">
+                        <label>Số lượng trong kho:</label>
+                        <input 
+                            type="number" 
+                            value={soLuongTon} 
+                            onChange={(e) => setSoLuongTon(e.target.value)} 
+                            required 
+                            min="0"
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label>Mô tả chi tiết:</label>
+                        <textarea 
+                            rows="5"
+                            value={moTa} 
+                            onChange={(e) => setMoTa(e.target.value)} 
+                            required 
+                        ></textarea>
+                    </div>
+
+                    <div className="btn-group">
+                        <button type="button" className="cancel-btn" onClick={() => navigate('/admin/products')}>
+                            Hủy Bỏ
+                        </button>
+                        <button type="submit" className="update-btn" disabled={loading}>
+                            {loading ? 'Đang lưu...' : 'Cập nhật'}
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 }
