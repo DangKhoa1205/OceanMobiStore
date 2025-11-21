@@ -28,7 +28,7 @@ function ProfilePage() {
                 const config = { headers: { 'Authorization': `Bearer ${token}` } };
 
                 // Gọi API mới
-                const { data } = await axios.get('https://ocean-backend.onrender.com/api/orders/myorders', config);
+                const { data } = await axios.get('https://ocean-backend-lcpp.onrender.com//api/orders/myorders', config);
                 setOrders(data);
                 setLoading(false);
             } catch (err) {

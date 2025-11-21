@@ -17,7 +17,7 @@ function AdminOrderListPage() {
             const token = localStorage.getItem('token');
             const config = { headers: { 'Authorization': `Bearer ${token}` } };
             
-            const { data } = await axios.get('https://ocean-backend.onrender.com/api/orders', config);
+            const { data } = await axios.get('https://ocean-backend-lcpp.onrender.com//api/orders', config);
             setOrders(data);
             setLoading(false);
         } catch (err) {
@@ -39,7 +39,7 @@ function AdminOrderListPage() {
             const config = { headers: { 'Authorization': `Bearer ${token}` } };
 
             await axios.put(
-                `https://ocean-backend.onrender.com/api/orders/${orderId}/status`,
+                `https://ocean-backend-lcpp.onrender.com//api/orders/${orderId}/status`,
                 { status: newStatus },
                 config
             );

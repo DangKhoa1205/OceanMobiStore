@@ -28,7 +28,7 @@ function SearchPage() {
                 setLoading(true);
                 // 2. Gọi API tìm kiếm
                 const { data } = await axios.get(
-                    `https://ocean-backend.onrender.com/api/products/search?q=${keyword}`
+                    `https://ocean-backend-lcpp.onrender.com//api/products/search?q=${keyword}`
                 );
                 setProducts(data);
                 setLoading(false);

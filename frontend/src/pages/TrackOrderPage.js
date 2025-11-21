@@ -69,7 +69,7 @@ function TrackOrderPage() {
         setError('');
         setOrder(null);
         try {
-            const { data } = await axios.post('https://ocean-backend.onrender.com/api/orders/lookup', {
+            const { data } = await axios.post('https://ocean-backend-lcpp.onrender.com//api/orders/lookup', {
                 orderId: orderId.trim(), // Xóa khoảng trắng
                 email: email.trim()
             });

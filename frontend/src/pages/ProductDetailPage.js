@@ -27,7 +27,7 @@ function ProductDetailPage() {
     const { userInfo } = useSelector((state) => state.user);
 
     // Link API (Render)
-    const API_URL = 'https://ocean-backend.onrender.com'; 
+    const API_URL = 'https://ocean-backend-lcpp.onrender.com/'; 
 
     const fetchProduct = useCallback(async () => {
         try {

@@ -27,7 +27,7 @@ function CheckoutPage() {
     const [paymentMethod, setPaymentMethod] = useState('COD'); 
 
     // === LINK API RENDER ===
-    const API_URL = 'https://ocean-backend.onrender.com';
+    const API_URL = 'https://ocean-backend-lcpp.onrender.com/';
 
     const handleSubmit = async (e) => {
         e.preventDefault();

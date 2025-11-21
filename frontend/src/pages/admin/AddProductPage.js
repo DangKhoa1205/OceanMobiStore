@@ -24,7 +24,7 @@ function AddProductPage() {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const { data } = await axios.get('https://ocean-backend.onrender.com/api/categories');
+                const { data } = await axios.get('https://ocean-backend-lcpp.onrender.com//api/categories');
                 setCategories(data);
                 if (data.length > 0) {
                     setCategoryId(data[0].id);
@@ -51,7 +51,7 @@ function AddProductPage() {
                 }
             };
             const { data } = await axios.post(
-                'https://ocean-backend.onrender.com/api/products',
+                'https://ocean-backend-lcpp.onrender.com//api/products',
                 { 
                     ten_san_pham: tenSanPham,
                     mo_ta: moTa,

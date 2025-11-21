@@ -19,7 +19,7 @@ function RegisterPage() {
         setSuccess('');
 
         try {
-            const response = await axios.post('https://ocean-backend.onrender.com/api/auth/register', {
+            const response = await axios.post('https://ocean-backend-lcpp.onrender.com//api/auth/register', {
                 email,
                 password,
                 ho_ten: hoTen

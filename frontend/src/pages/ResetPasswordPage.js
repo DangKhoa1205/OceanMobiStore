@@ -19,7 +19,7 @@ function ResetPasswordPage() {
         }
         try {
             const response = await axios.post(
-                `https://ocean-backend.onrender.com/api/auth/reset-password/${token}`, 
+                `https://ocean-backend-lcpp.onrender.com//api/auth/reset-password/${token}`, 
                 { password }
             );
             setMessage(response.data.message + " Sẽ chuyển đến trang đăng nhập...");

@@ -21,7 +21,7 @@ function LoginPage() {
         e.preventDefault();
         setLoading(true); // Bắt đầu loading
         try {
-            const { data } = await axios.post('https://ocean-backend.onrender.com/api/auth/login', {
+            const { data } = await axios.post('https://ocean-backend-lcpp.onrender.com//api/auth/login', {
                 email,
                 password
             });
@@ -47,7 +47,7 @@ function LoginPage() {
         const googleToken = credentialResponse.credential;
         setLoading(true); // Bắt đầu loading
         try {
-            const { data } = await axios.post('https://ocean-backend.onrender.com/api/auth/google-login', {
+            const { data } = await axios.post('https://ocean-backend-lcpp.onrender.com//api/auth/google-login', {
                 googleToken: googleToken,
             });
             localStorage.setItem('token', data.token);

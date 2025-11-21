@@ -32,7 +32,7 @@ function CategoryAdminPage() {
     const fetchCategories = async () => {
         try {
             setLoading(true);
-            const { data } = await axios.get('https://ocean-backend.onrender.com/api/categories');
+            const { data } = await axios.get('https://ocean-backend-lcpp.onrender.com//api/categories');
             setCategories(data);
             setLoading(false);
         } catch (err) {
@@ -62,7 +62,7 @@ function CategoryAdminPage() {
             };
             
             const { data } = await axios.post(
-                'https://ocean-backend.onrender.com/api/categories',
+                'https://ocean-backend-lcpp.onrender.com//api/categories',
                 { ten_danh_muc: newName },
                 config
             );

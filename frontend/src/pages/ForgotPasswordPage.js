@@ -17,7 +17,7 @@ function ForgotPasswordPage() {
 
         try {
             const { data } = await axios.post(
-                'https://ocean-backend.onrender.com/api/auth/forgot-password', 
+                'https://ocean-backend-lcpp.onrender.com//api/auth/forgot-password', 
                 { email }
             );
 

@@ -33,8 +33,8 @@ function HomePage() {
             try {
                 setLoading(true);
                 const [productsRes, categoriesRes] = await Promise.all([
-                    axios.get('https://ocean-backend.onrender.com/api/products'),
-                    axios.get('https://ocean-backend.onrender.com/api/categories')
+                    axios.get('https://ocean-backend-lcpp.onrender.com//api/products'),
+                    axios.get('https://ocean-backend-lcpp.onrender.com//api/categories')
                 ]);
                 setProducts(productsRes.data);
                 setCategories(categoriesRes.data);
@@ -63,7 +63,7 @@ function HomePage() {
             const token = localStorage.getItem('token');
             const config = { headers: { 'Authorization': `Bearer ${token}` } };
             
-            await axios.delete(`https://ocean-backend.onrender.com/api/products/${productToDelete}`, config);
+            await axios.delete(`https://ocean-backend-lcpp.onrender.com//api/products/${productToDelete}`, config);
             
             setProducts(products.filter(p => p.id !== productToDelete));
             

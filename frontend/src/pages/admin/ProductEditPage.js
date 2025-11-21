@@ -25,7 +25,7 @@ function ProductEditPage() {
         // (Code tải categories...)
         const fetchCategories = async () => {
             try {
-                const { data } = await axios.get('https://ocean-backend.onrender.com/api/categories');
+                const { data } = await axios.get('https://ocean-backend-lcpp.onrender.com//api/categories');
                 setCategories(data);
             } catch (err) { /*...*/ }
         };
@@ -33,7 +33,7 @@ function ProductEditPage() {
         const fetchProductDetails = async () => {
             try {
                 setLoading(true);
-                const { data } = await axios.get(`https://ocean-backend.onrender.com/api/products/${productId}`);
+                const { data } = await axios.get(`https://ocean-backend-lcpp.onrender.com//api/products/${productId}`);
                 setTenSanPham(data.ten_san_pham);
                 setMoTa(data.mo_ta);
                 setGia(data.gia);
@@ -65,7 +65,7 @@ function ProductEditPage() {
                 }
             };
             const { data } = await axios.put(
-                `https://ocean-backend.onrender.com/api/products/${productId}`,
+                `https://ocean-backend-lcpp.onrender.com//api/products/${productId}`,
                 { 
                     ten_san_pham: tenSanPham,
                     mo_ta: moTa,

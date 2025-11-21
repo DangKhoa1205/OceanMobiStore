@@ -18,7 +18,7 @@ function OrderSuccessPage() {
                     headers: { 'Authorization': `Bearer ${token}` }
                 };
                 
-                const { data } = await axios.get(`https://ocean-backend.onrender.com/api/orders/${orderId}`, config);
+                const { data } = await axios.get(`https://ocean-backend-lcpp.onrender.com//api/orders/${orderId}`, config);
                 setOrder(data);
                 setLoading(false);
             } catch (err) {
