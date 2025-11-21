@@ -1,11 +1,7 @@
 // frontend/src/pages/ProductDetailPage.js
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-
-// === ĐÂY LÀ DÒNG QUAN TRỌNG ĐỂ SỬA LỖI AXIOS ===
-import axios from 'axios'; 
-// ==============================================
-
+import axios from 'axios'; // Đảm bảo đã import axios
 import { useSelector, useDispatch } from 'react-redux';
 import { addToCart } from '../redux/cartSlice';
 import { showToast } from '../redux/toastSlice';
@@ -26,18 +22,21 @@ function ProductDetailPage() {
     const navigate = useNavigate();
     const { userInfo } = useSelector((state) => state.user);
 
-    // Link API (Render)
-    const API_URL = 'https://ocean-backend-lcpp.onrender.com/'; 
+    // === 1. KHAI BÁO API URL CHUẨN (Không có dấu / ở cuối) ===
+    const API_URL = 'https://ocean-backend-lcpp.onrender.com'; 
 
+    // === 2. SỬA LỖI LINK API KHI LẤY SẢN PHẨM ===
     const fetchProduct = useCallback(async () => {
         try {
             setLoading(true);
+            // Dùng `${API_URL}/api...` để tránh lỗi //
             const { data } = await axios.get(`${API_URL}/api/products/${id}`);
             setProduct(data);
             setLoading(false);
         } catch (err) {
             console.error(err);
             setLoading(false);
+            // Không hiện toast lỗi ở đây để tránh spam nếu người dùng load lại nhiều lần
         }
     }, [id]); 
 
@@ -64,6 +63,7 @@ function ProductDetailPage() {
             const token = localStorage.getItem('token');
             const config = { headers: { 'Authorization': `Bearer ${token}` } };
 
+            // === 3. SỬA LỖI LINK API KHI GỬI ĐÁNH GIÁ ===
             await axios.post(
                 `${API_URL}/api/products/${id}/reviews`,
                 { rating, comment },
@@ -75,7 +75,7 @@ function ProductDetailPage() {
             setComment('');
             setSubmitting(false);
             
-            fetchProduct(); 
+            fetchProduct(); // Tải lại sản phẩm để hiện review mới
             
         } catch (err) {
             const message = err.response?.data?.message || 'Lỗi khi gửi đánh giá';
@@ -89,6 +89,7 @@ function ProductDetailPage() {
 
     return (
         <div className="main-container">
+            {/* --- PHẦN 1: THÔNG TIN CHUNG --- */}
             <div className="product-detail-container">
                 <div className="product-detail-image">
                     <img src={product.hinh_anh_url} alt={product.ten_san_pham} />
@@ -142,6 +143,7 @@ function ProductDetailPage() {
                 </div>
             </div>
 
+            {/* --- PHẦN 2: ĐÁNH GIÁ --- */}
             <div className="product-reviews-container">
                 <div className="product-reviews-list">
                     <h2>Đánh giá ({product.Reviews ? product.Reviews.length : 0})</h2>
