@@ -25,14 +25,15 @@ function HomePage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [productToDelete, setProductToDelete] = useState(null);
 
-    // === 1. KHAI BÁO API URL CHUẨN (Không có dấu / ở cuối) ===
+    // === 1. KHAI BÁO API URL CHUẨN (ĐÃ FIX LINK) ===
+    // Lưu ý: Không có dấu gạch chéo '/' ở cuối
     const API_URL = 'https://ocean-backend-lcpp.onrender.com';
 
     useEffect(() => {
         const fetchData = async () => {
             try {
                 setLoading(true);
-                // === 2. SỬA LỖI: Dùng biến API_URL để tránh dư dấu // ===
+                // === 2. GỌI API CHUẨN (SỬA LỖI DƯ DẤU //) ===
                 const [productsRes, categoriesRes] = await Promise.all([
                     axios.get(`${API_URL}/api/products`),
                     axios.get(`${API_URL}/api/categories`)
@@ -41,6 +42,7 @@ function HomePage() {
                 setCategories(categoriesRes.data);
                 setLoading(false);
             } catch (err) {
+                console.error("Lỗi tải trang chủ:", err); // Log lỗi ra console để dễ kiểm tra
                 dispatch(showToast({ message: 'Không thể tải dữ liệu. Vui lòng thử lại sau.', type: 'error' }));
                 setLoading(false);
             }
@@ -60,7 +62,7 @@ function HomePage() {
             const token = localStorage.getItem('token');
             const config = { headers: { 'Authorization': `Bearer ${token}` } };
             
-            // === 3. SỬA LỖI: Dùng biến API_URL ở đây nữa ===
+            // === 3. GỌI API XÓA CHUẨN ===
             await axios.delete(`${API_URL}/api/products/${productToDelete}`, config);
             
             setProducts(products.filter(p => p.id !== productToDelete));
@@ -134,4 +136,3 @@ function HomePage() {
 }
 
 export default HomePage;
-// Update
