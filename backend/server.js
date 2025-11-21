@@ -7,7 +7,13 @@ const cors = require('cors');
 const { sequelize, syncDatabase } = require('./models');
 
 const app = express();
-app.use(cors()); // Cho phép Frontend gọi API
+app.use(cors({
+    // Cho phép tên miền Vercel của bạn gọi vào
+    origin: '*', // Dấu * nghĩa là cho phép tất cả (dễ nhất để fix lỗi ngay)
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Các hành động được phép
+    allowedHeaders: ['Content-Type', 'Authorization'], // Các tiêu đề được phép
+    credentials: true
+})); // Cho phép Frontend gọi API
 app.use(express.json()); // Đọc body dạng JSON
 
 // Kết nối routes (Giữ nguyên)
