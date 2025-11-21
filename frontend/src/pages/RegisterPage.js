@@ -30,7 +30,7 @@ function RegisterPage() {
     }, [navigate, userInfo, redirect]);
 
     // === QUAN TRỌNG: LINK API RENDER ===
-    const API_URL = 'https://ocean-backend.onrender.com';
+    const API_URL = 'https://ocean-backend-lcpp.onrender.com';
 
     const submitHandler = async (e) => {
         e.preventDefault();
