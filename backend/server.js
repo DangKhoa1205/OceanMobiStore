@@ -8,12 +8,18 @@ const { sequelize, syncDatabase } = require('./models');
 
 const app = express();
 app.use(cors({
-    // Cho phép tên miền Vercel của bạn gọi vào
-    origin: '*', // Dấu * nghĩa là cho phép tất cả (dễ nhất để fix lỗi ngay)
-    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Các hành động được phép
-    allowedHeaders: ['Content-Type', 'Authorization'], // Các tiêu đề được phép
+    // Chỉ cho phép đúng link Vercel của bạn và localhost (để test máy nhà)
+    origin: [
+        'https://ocean-mobi-store-12.vercel.app', // Link Vercel của bạn
+        'http://localhost:3000' // Link máy local
+    ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true
-})); // Cho phép Frontend gọi API
+}));
+
+// Xử lý Preflight request cho mọi route (Quan trọng cho lỗi của bạn)
+app.options('*', cors());
 app.use(express.json()); // Đọc body dạng JSON
 
 // Kết nối routes (Giữ nguyên)
