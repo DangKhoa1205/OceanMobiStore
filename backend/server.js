@@ -2,27 +2,33 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-
-// === 1. SỬA LỖI: IMPORT TỪ ./models (tức là file index.js) ===
+// Import DB
 const { sequelize, syncDatabase } = require('./models');
 
 const app = express();
-app.use(cors({
-    // Chỉ cho phép đúng link Vercel của bạn và localhost (để test máy nhà)
+
+// === CẤU HÌNH CORS (SỬA LẠI ĐỂ DÙNG CHUNG) ===
+// Tạo biến này để đảm bảo app.use và app.options giống hệt nhau
+const corsOptions = {
     origin: [
-        'https://ocean-mobi-store-12.vercel.app', // Link Vercel của bạn
+        'https://ocean-mobi-store-12.vercel.app', // Link Vercel chính xác của bạn
         'http://localhost:3000' // Link máy local
     ],
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], 
     allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true
-}));
+    credentials: true // Cho phép gửi cookie/token
+};
 
-// Xử lý Preflight request cho mọi route (Quan trọng cho lỗi của bạn)
-app.options('*', cors());
-app.use(express.json()); // Đọc body dạng JSON
+// 1. Áp dụng CORS cho mọi request
+app.use(cors(corsOptions));
 
-// Kết nối routes (Giữ nguyên)
+// 2. Xử lý riêng cho Preflight Request (Quan trọng để fix lỗi của bạn)
+// Phải truyền corsOptions vào đây nữa thì nó mới khớp
+app.options('*', cors(corsOptions)); 
+
+app.use(express.json());
+
+// Kết nối routes
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/categories', require('./routes/categoryRoutes'));
 app.use('/api/products', require('./routes/productRoutes'));
@@ -34,16 +40,8 @@ app.listen(PORT, async () => {
     console.log(`Server đang chạy tại http://localhost:${PORT}`);
     try {
         await sequelize.authenticate();
-        
-        // === 2. SỬA LỖI: GỌI HÀM syncDatabase() TỪ index.js ===
-        // Hàm này sẽ tạo bảng VÀ chạy các mối quan hệ (associations)
         await syncDatabase(); 
-        
-        // (Log cũ của bạn là 'Đã kết nối PostgreSQL thành công!' 
-        // nhưng hàm syncDatabase đã log 'Database synced successfully.' rồi,
-        // nên chúng ta có thể bỏ log này hoặc giữ lại)
         console.log('Đã kết nối và đồng bộ CSDL thành công!');
-
     } catch (error) {
         console.error('Không thể kết nối hoặc đồng bộ CSDL:', error);
     }
