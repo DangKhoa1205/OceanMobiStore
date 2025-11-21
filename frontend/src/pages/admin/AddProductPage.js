@@ -1,125 +1,163 @@
 // frontend/src/pages/admin/AddProductPage.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-
-import './AdminForm.css'; // <-- 1. IMPORT CSS MỚI
+import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux'; // <-- Đã bỏ useSelector vì không dùng đến
+import { showToast } from '../../redux/toastSlice'; 
+import './AddProductPage.css'; 
 
 function AddProductPage() {
-    // (State của bạn giữ nguyên)
     const [tenSanPham, setTenSanPham] = useState('');
-    const [moTa, setMoTa] = useState('');
     const [gia, setGia] = useState('');
-    const [soLuongTon, setSoLuongTon] = useState('');
     const [hinhAnhUrl, setHinhAnhUrl] = useState('');
+    const [moTa, setMoTa] = useState('');
+    const [soLuongTon, setSoLuongTon] = useState('');
     const [categoryId, setCategoryId] = useState('');
-    
     const [categories, setCategories] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
     
-   
+    const [loading, setLoading] = useState(false);
 
-    // (useEffect để tải Categories giữ nguyên)
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+    // Đã xóa dòng userInfo thừa ở đây
+
+    // === 1. KHAI BÁO API URL CHUẨN ===
+    const API_URL = 'https://ocean-backend-lcpp.onrender.com';
+
+    // Tải danh sách Hãng
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const { data } = await axios.get('https://ocean-backend-lcpp.onrender.com//api/categories');
+                const { data } = await axios.get(`${API_URL}/api/categories`);
                 setCategories(data);
-                if (data.length > 0) {
+                
+                if (data && data.length > 0) {
                     setCategoryId(data[0].id);
                 }
-            } catch (err) {
-                setError('Lỗi khi tải danh mục');
+            } catch (error) {
+                dispatch(showToast({ message: 'Lỗi khi tải danh sách hãng', type: 'error' }));
             }
         };
         fetchCategories();
-    }, []);
+    }, [dispatch]);
 
-    // (Hàm handleSubmit giữ nguyên)
-    const handleSubmit = async (e) => {
+    const submitHandler = async (e) => {
         e.preventDefault();
         setLoading(true);
-        setError('');
-        setSuccess('');
+
         try {
             const token = localStorage.getItem('token');
-            const config = {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                }
-            };
-            const { data } = await axios.post(
-                'https://ocean-backend-lcpp.onrender.com//api/products',
-                { 
+            const config = { headers: { Authorization: `Bearer ${token}` } };
+
+            await axios.post(
+                `${API_URL}/api/products`,
+                {
                     ten_san_pham: tenSanPham,
-                    mo_ta: moTa,
                     gia: Number(gia),
-                    so_luong_ton: Number(soLuongTon),
                     hinh_anh_url: hinhAnhUrl,
-                    category_id: Number(categoryId)
+                    mo_ta: moTa,
+                    so_luong_ton: Number(soLuongTon),
+                    category_id: categoryId
                 },
                 config
             );
-            setSuccess(data.message + " (Đã xóa form)");
-            setLoading(false);
-            // Xóa form
-            setTenSanPham('');
-            setMoTa('');
-            setGia('');
-            setSoLuongTon('');
-            setHinhAnhUrl('');
-        } catch (err) {
-            setError(err.response?.data?.message || 'Lỗi khi thêm sản phẩm');
+
+            dispatch(showToast({ message: 'Thêm sản phẩm thành công!', type: 'success' }));
+            navigate('/'); 
+        } catch (error) {
+            const message = error.response?.data?.message || 'Lỗi khi thêm sản phẩm';
+            dispatch(showToast({ message: message, type: 'error' }));
+        } finally {
             setLoading(false);
         }
     };
 
     return (
-        // 2. SỬ DỤNG LAYOUT CHUNG
-        <div className="main-container"> 
-            <h2 className="admin-form-title">Thêm Sản Phẩm Mới</h2>
-            
-            {/* 3. ÁP DỤNG CLASSNAME CHO FORM */}
-            <form onSubmit={handleSubmit} className="admin-form">
-                <div className="form-group">
-                    <label htmlFor="tenSanPham">Tên sản phẩm:</label>
-                    <input id="tenSanPham" type="text" value={tenSanPham} onChange={(e) => setTenSanPham(e.target.value)} required />
-                </div>
-                <div className="form-group">
-                    <label htmlFor="moTa">Mô tả:</label>
-                    <textarea id="moTa" value={moTa} onChange={(e) => setMoTa(e.target.value)} />
-                </div>
-                <div className="form-group">
-                    <label htmlFor="gia">Giá:</label>
-                    <input id="gia" type="number" value={gia} onChange={(e) => setGia(e.target.value)} required />
-                </div>
-                <div className="form-group">
-                    <label htmlFor="soLuongTon">Số lượng tồn:</label>
-                    <input id="soLuongTon" type="number" value={soLuongTon} onChange={(e) => setSoLuongTon(e.target.value)} />
-                </div>
-                <div className="form-group">
-                    <label htmlFor="hinhAnhUrl">Link hình ảnh:</label>
-                    <input id="hinhAnhUrl" type="text" value={hinhAnhUrl} onChange={(e) => setHinhAnhUrl(e.target.value)} />
-                </div>
-                <div className="form-group">
-                    <label htmlFor="category">Hãng:</label>
-                    <select id="category" value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
-                        {categories.map((cat) => (
-                            <option key={cat.id} value={cat.id}>
-                                {cat.ten_danh_muc}
-                            </option>
-                        ))}
-                    </select>
-                </div>
+        <div className="main-container">
+            <div className="add-product-form-container">
+                <h1>Thêm Sản Phẩm Mới</h1>
+                
+                <form onSubmit={submitHandler}>
+                    <div className="form-group">
+                        <label>Tên sản phẩm:</label>
+                        <input 
+                            type="text" 
+                            value={tenSanPham} 
+                            onChange={(e) => setTenSanPham(e.target.value)} 
+                            required 
+                            placeholder="Ví dụ: iPhone 15 Pro Max"
+                        />
+                    </div>
 
-                <button type="submit" disabled={loading} className="admin-submit-button">
-                    {loading ? 'Đang thêm...' : 'Thêm Sản Phẩm'}
-                </button>
-                {error && <p className="admin-form-error">{error}</p>}
-                {success && <p className="admin-form-success">{success}</p>}
-            </form>
+                    <div className="form-group">
+                        <label>Giá (VNĐ):</label>
+                        <input 
+                            type="number" 
+                            value={gia} 
+                            onChange={(e) => setGia(e.target.value)} 
+                            required 
+                            min="0"
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label>Link hình ảnh (URL):</label>
+                        <input 
+                            type="text" 
+                            value={hinhAnhUrl} 
+                            onChange={(e) => setHinhAnhUrl(e.target.value)} 
+                            required 
+                            placeholder="https://example.com/anh-san-pham.jpg"
+                        />
+                        {hinhAnhUrl && (
+                            <div className="image-preview">
+                                <img src={hinhAnhUrl} alt="Preview" style={{maxHeight: '100px', marginTop: '10px'}} />
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="form-group">
+                        <label>Hãng sản xuất:</label>
+                        <select 
+                            value={categoryId} 
+                            onChange={(e) => setCategoryId(e.target.value)}
+                            required
+                        >
+                            <option value="">-- Chọn hãng --</option>
+                            {categories.map(cat => (
+                                <option key={cat.id} value={cat.id}>
+                                    {cat.ten_danh_muc}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="form-group">
+                        <label>Số lượng trong kho:</label>
+                        <input 
+                            type="number" 
+                            value={soLuongTon} 
+                            onChange={(e) => setSoLuongTon(e.target.value)} 
+                            required 
+                            min="0"
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label>Mô tả chi tiết:</label>
+                        <textarea 
+                            rows="5"
+                            value={moTa} 
+                            onChange={(e) => setMoTa(e.target.value)} 
+                            required 
+                        ></textarea>
+                    </div>
+
+                    <button type="submit" className="add-btn" disabled={loading}>
+                        {loading ? 'Đang xử lý...' : 'Xác nhận Thêm'}
+                    </button>
+                </form>
+            </div>
         </div>
     );
 }
