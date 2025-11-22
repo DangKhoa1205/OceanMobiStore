@@ -1,65 +1,40 @@
-// frontend/src/redux/cartSlice.js
+// frontend/src/redux/userSlice.js
 import { createSlice } from '@reduxjs/toolkit';
 
+// Lấy thông tin user từ localStorage (nếu có)
+const userInfoFromStorage = localStorage.getItem('userInfo')
+  ? JSON.parse(localStorage.getItem('userInfo'))
+  : null;
+
 const initialState = {
-    cartItems: localStorage.getItem('cartItems')
-        ? JSON.parse(localStorage.getItem('cartItems'))
-        : [],
-    shippingAddress: {},
+  userInfo: userInfoFromStorage,
 };
 
-const cartSlice = createSlice({
-    name: 'cart',
-    initialState,
-    reducers: {
-        // 1. Reducer Thêm/Cập nhật Giỏ hàng
-        addToCart: (state, action) => {
-            const item = action.payload;
-            const existItem = state.cartItems.find((x) => x.id === item.id);
-
-            if (existItem) {
-                state.cartItems = state.cartItems.map((x) =>
-                    x.id === existItem.id ? item : x
-                );
-            } else {
-                state.cartItems = [...state.cartItems, item];
-            }
-            
-            localStorage.setItem('cartItems', JSON.stringify(state.cartItems));
-        },
-
-        // 2. Reducer Xóa khỏi giỏ hàng
-        removeFromCart: (state, action) => {
-            // action.payload sẽ là ID
-            state.cartItems = state.cartItems.filter((x) => x.id !== action.payload);
-            localStorage.setItem('cartItems', JSON.stringify(state.cartItems));
-        },
-
-        // 3. Reducer Xóa sạch giỏ hàng
-        clearCart: (state) => {
-            state.cartItems = [];
-            localStorage.removeItem('cartItems');
-        },
-
-        // 4. Reducer Cập nhật Số lượng
-        updateCartQty: (state, action) => {
-            const { id, qty } = action.payload;
-            const newQty = Number(qty); // Đảm bảo là số
-
-            if (newQty < 1) return; // Chặn số lượng < 1
-            
-            const existItem = state.cartItems.find((x) => x.id === id);
-
-            if (existItem) {
-                existItem.qty = newQty; // Cập nhật số lượng
-            }
-            
-            localStorage.setItem('cartItems', JSON.stringify(state.cartItems));
-        }
+const userSlice = createSlice({
+  name: 'user',
+  initialState,
+  reducers: {
+    // 1. Đăng nhập
+    userLogin: (state, action) => {
+      state.userInfo = action.payload;
+      localStorage.setItem('userInfo', JSON.stringify(action.payload));
     },
+    // 2. Đăng xuất
+    userLogout: (state) => {
+      state.userInfo = null;
+      localStorage.removeItem('userInfo');
+      localStorage.removeItem('token');
+    },
+    // 3. Cập nhật hồ sơ (ĐÂY LÀ HÀM CÒN THIẾU)
+    userUpdateProfile: (state, action) => {
+      state.userInfo = action.payload;
+      // Cập nhật lại localStorage luôn để F5 không bị mất dữ liệu mới
+      localStorage.setItem('userInfo', JSON.stringify(action.payload));
+    },
+  },
 });
 
-// 5. Export 4 HÀNH ĐỘNG
-export const { addToCart, removeFromCart, clearCart, updateCartQty } = cartSlice.actions;
+// Xuất các action ra để dùng ở các trang khác
+export const { userLogin, userLogout, userUpdateProfile } = userSlice.actions;
 
-export default cartSlice.reducer;
+export default userSlice.reducer;
