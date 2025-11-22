@@ -1,7 +1,7 @@
 // frontend/src/redux/cartSlice.js
 import { createSlice } from '@reduxjs/toolkit';
 
-// Lấy giỏ hàng từ localStorage
+// Lấy giỏ hàng từ localStorage khi tải trang
 const cartItemsFromStorage = localStorage.getItem('cartItems')
   ? JSON.parse(localStorage.getItem('cartItems'))
   : [];
@@ -29,13 +29,14 @@ const cartSlice = createSlice({
       localStorage.setItem('cartItems', JSON.stringify(state.cartItems));
     },
 
-    // 2. Xóa khỏi giỏ hàng
+    // 2. Xóa khỏi giỏ hàng (Hàm này đang thiếu -> Gây lỗi Build)
     removeFromCart: (state, action) => {
+      // action.payload là ID sản phẩm cần xóa
       state.cartItems = state.cartItems.filter((x) => x.id !== action.payload);
       localStorage.setItem('cartItems', JSON.stringify(state.cartItems));
     },
 
-    // 3. Cập nhật số lượng (ĐÂY LÀ HÀM BẠN ĐANG THIẾU)
+    // 3. Cập nhật số lượng (Hàm này đang thiếu -> Gây lỗi Build)
     updateCartQty: (state, action) => {
       const { id, qty } = action.payload;
       const item = state.cartItems.find((x) => x.id === id);
@@ -53,7 +54,7 @@ const cartSlice = createSlice({
   },
 });
 
-// === QUAN TRỌNG: Xuất đủ 4 hàm này ra ===
+// === QUAN TRỌNG: Phải xuất đủ 4 hàm này ra ===
 export const { addToCart, removeFromCart, updateCartQty, clearCart } = cartSlice.actions;
 
 export default cartSlice.reducer;
