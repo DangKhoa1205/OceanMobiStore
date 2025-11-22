@@ -1,7 +1,7 @@
 // frontend/src/redux/userSlice.js
 import { createSlice } from '@reduxjs/toolkit';
 
-// Lấy userInfo từ localStorage (nếu đã đăng nhập từ lần trước)
+// Lấy thông tin user từ localStorage (nếu có)
 const userInfoFromStorage = localStorage.getItem('userInfo')
   ? JSON.parse(localStorage.getItem('userInfo'))
   : null;
@@ -14,19 +14,27 @@ const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
-    // Action khi đăng nhập
+    // 1. Đăng nhập
     userLogin: (state, action) => {
       state.userInfo = action.payload;
       localStorage.setItem('userInfo', JSON.stringify(action.payload));
     },
-    // Action khi đăng xuất
+    // 2. Đăng xuất
     userLogout: (state) => {
       state.userInfo = null;
       localStorage.removeItem('userInfo');
-      localStorage.removeItem('token'); // Xóa cả token
+      localStorage.removeItem('token');
+    },
+    // 3. Cập nhật hồ sơ (ĐÂY LÀ HÀM CÒN THIẾU)
+    userUpdateProfile: (state, action) => {
+      state.userInfo = action.payload;
+      // Cập nhật lại localStorage luôn để F5 không bị mất dữ liệu mới
+      localStorage.setItem('userInfo', JSON.stringify(action.payload));
     },
   },
 });
 
-export const { userLogin, userLogout } = userSlice.actions;
+// Xuất các action ra để dùng ở các trang khác
+export const { userLogin, userLogout, userUpdateProfile } = userSlice.actions;
+
 export default userSlice.reducer;
