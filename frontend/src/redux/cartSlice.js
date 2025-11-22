@@ -1,7 +1,7 @@
 // frontend/src/redux/cartSlice.js
 import { createSlice } from '@reduxjs/toolkit';
 
-// Lấy giỏ hàng từ localStorage khi tải trang (để F5 không mất hàng)
+// Lấy giỏ hàng từ localStorage
 const cartItemsFromStorage = localStorage.getItem('cartItems')
   ? JSON.parse(localStorage.getItem('cartItems'))
   : [];
@@ -20,27 +20,32 @@ const cartSlice = createSlice({
       const existItem = state.cartItems.find((x) => x.id === item.id);
 
       if (existItem) {
-        // Nếu sản phẩm đã có, cập nhật lại số lượng/thông tin
         state.cartItems = state.cartItems.map((x) =>
           x.id === existItem.id ? item : x
         );
       } else {
-        // Nếu chưa có, thêm mới vào
         state.cartItems = [...state.cartItems, item];
       }
-      
-      // Lưu ngay vào bộ nhớ trình duyệt
       localStorage.setItem('cartItems', JSON.stringify(state.cartItems));
     },
 
-    // 2. Xóa khỏi giỏ hàng (ĐÂY LÀ HÀM BẠN ĐANG THIẾU)
+    // 2. Xóa khỏi giỏ hàng
     removeFromCart: (state, action) => {
-      // action.payload là ID sản phẩm cần xóa
       state.cartItems = state.cartItems.filter((x) => x.id !== action.payload);
       localStorage.setItem('cartItems', JSON.stringify(state.cartItems));
     },
 
-    // 3. Xóa sạch giỏ hàng (Dùng khi đặt hàng xong)
+    // 3. Cập nhật số lượng (ĐÂY LÀ HÀM BẠN ĐANG THIẾU)
+    updateCartQty: (state, action) => {
+      const { id, qty } = action.payload;
+      const item = state.cartItems.find((x) => x.id === id);
+      if (item) {
+        item.qty = qty;
+        localStorage.setItem('cartItems', JSON.stringify(state.cartItems));
+      }
+    },
+
+    // 4. Xóa sạch giỏ hàng
     clearCart: (state) => {
       state.cartItems = [];
       localStorage.removeItem('cartItems');
@@ -48,7 +53,7 @@ const cartSlice = createSlice({
   },
 });
 
-// Xuất các hàm ra để các trang khác dùng
-export const { addToCart, removeFromCart, clearCart } = cartSlice.actions;
+// === QUAN TRỌNG: Xuất đủ 4 hàm này ra ===
+export const { addToCart, removeFromCart, updateCartQty, clearCart } = cartSlice.actions;
 
 export default cartSlice.reducer;
