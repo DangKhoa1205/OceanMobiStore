@@ -3,7 +3,7 @@
 // 1. Đảm bảo IMPORT đúng từ models/index.js
 const { Order, OrderItem, Product, User } = require('../models');
 
-// 1. TẠO ĐƠN HÀNG MỚI
+// 1. TẠO ĐƠN HÀNG MỚI (Đã thêm logic Trừ Kho)
 exports.createOrder = async (req, res) => {
     const { cartItems, shippingAddress, totalPrice, paymentMethod } = req.body;
     
@@ -12,24 +12,40 @@ exports.createOrder = async (req, res) => {
     }
 
     try {
+        // A. Tạo đơn hàng chính (Order)
         const order = await Order.create({
             user_id: req.user.id,
             tong_tien: totalPrice,
             dia_chi_giao_hang: shippingAddress,
-            phuong_thuc_thanh_toan: paymentMethod, // Đã sửa tên ở model
-            trang_thai: 'Pending', // Mặc định
+            phuong_thuc_thanh_toan: paymentMethod,
+            trang_thai: 'Pending',
+            trang_thai_thanh_toan: paymentMethod === 'Momo' || paymentMethod === 'VNPay' ? true : false,
         });
 
-        const createdOrderItems = await Promise.all(
-            cartItems.map(async (item) => {
-                return OrderItem.create({
-                    order_id: order.id,
-                    product_id: item.id,
-                    so_luong: item.qty,
-                    gia_luc_mua: item.gia,
-                });
-            })
-        );
+        // B. Tạo chi tiết đơn hàng VÀ Trừ kho
+        // Dùng vòng lặp for...of để xử lý tuần tự (an toàn hơn map)
+        for (const item of cartItems) {
+            // 1. Lưu vào bảng OrderItem
+            await OrderItem.create({
+                order_id: order.id,
+                product_id: item.id,
+                so_luong: item.qty,
+                gia_luc_mua: item.gia,
+            });
+
+            // 2. === QUAN TRỌNG: TRỪ KHO ===
+            const product = await Product.findByPk(item.id);
+            if (product) {
+                // Trừ số lượng tồn kho
+                product.so_luong_ton = product.so_luong_ton - item.qty;
+                
+                // Đảm bảo không bị âm
+                if (product.so_luong_ton < 0) product.so_luong_ton = 0;
+
+                // Lưu thay đổi vào Database
+                await product.save();
+            }
+        }
         
         res.status(201).json({ message: 'Tạo đơn hàng thành công', order: order });
 
@@ -39,7 +55,7 @@ exports.createOrder = async (req, res) => {
     }
 };
 
-// 2. LẤY CHI TIẾT ĐƠN (TRANG SUCCESS / TRA CỨU)
+// 2. LẤY CHI TIẾT ĐƠN
 exports.getOrderById = async (req, res) => {
     try {
         const order = await Order.findByPk(req.params.id, {
@@ -59,7 +75,7 @@ exports.getOrderById = async (req, res) => {
         }
         
         // Bảo mật: Chỉ chủ đơn hàng hoặc admin mới được xem
-        if (order.user_id !== req.user.id && req.user.role !== 'admin') {
+        if (req.user.role !== 'admin' && order.user_id !== req.user.id) {
              return res.status(403).json({ message: 'Không có quyền xem đơn hàng này' });
         }
 
@@ -90,8 +106,6 @@ exports.lookupOrder = async (req, res) => {
             return res.status(404).json({ message: 'Không tìm thấy đơn hàng' });
         }
 
-        // Logic tra cứu: Phải khớp SĐT trong địa chỉ
-        // (Chúng ta lưu SĐT trong dia_chi_giao_hang)
         if (!order.dia_chi_giao_hang.includes(phone)) {
             return res.status(404).json({ message: 'Thông tin tra cứu không khớp' });
         }
@@ -111,7 +125,7 @@ exports.getAllOrders = async (req, res) => {
                 model: User,
                 attributes: ['ho_ten', 'email']
             }],
-            order: [['ngay_dat_hang', 'DESC']]
+            order: [['createdAt', 'DESC']] // Sửa 'ngay_dat_hang' thành 'createdAt' nếu dùng default timestamp
         });
         res.status(200).json(orders);
     } catch (error) {
@@ -131,6 +145,11 @@ exports.updateOrderStatus = async (req, res) => {
         }
 
         order.trang_thai = status;
+        // Nếu là trạng thái 'Delivered' (Đã giao), có thể cập nhật luôn trang_thai_giao_hang = true
+        if (status === 'Delivered') {
+            order.trang_thai_giao_hang = true;
+        }
+
         await order.save();
         
         res.status(200).json({ message: 'Cập nhật trạng thái thành công', order });
@@ -141,12 +160,12 @@ exports.updateOrderStatus = async (req, res) => {
     }
 };
 
-// === 6. HÀM MỚI: LẤY ĐƠN HÀNG CỦA TÔI (USER) ===
+// 6. LẤY ĐƠN HÀNG CỦA TÔI (USER)
 exports.getMyOrders = async (req, res) => {
     try {
         const orders = await Order.findAll({
-            where: { user_id: req.user.id }, // Tìm đơn của user đang login
-            order: [['ngay_dat_hang', 'DESC']], // Mới nhất lên đầu
+            where: { user_id: req.user.id }, 
+            order: [['createdAt', 'DESC']], 
             include: [
                 {
                     model: OrderItem,
@@ -157,7 +176,7 @@ exports.getMyOrders = async (req, res) => {
             ]
         });
         
-        res.status(200).json(orders); // Trả về mảng (có thể rỗng)
+        res.status(200).json(orders); 
 
     } catch (error) {
         console.error("Lỗi khi lấy đơn hàng của tôi:", error);
