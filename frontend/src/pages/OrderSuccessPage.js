@@ -1,95 +1,83 @@
 // frontend/src/pages/OrderSuccessPage.js
-import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
 import axios from 'axios';
-import './OrderSuccessPage.css'; // Import CSS
+import './OrderSuccessPage.css'; // Nếu chưa có thì tạo file rỗng cũng được
 
 function OrderSuccessPage() {
-    const { id: orderId } = useParams(); // Lấy ID đơn hàng từ URL
+    const { id } = useParams(); // Lấy mã đơn hàng từ URL
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
+
+    // === 1. KHAI BÁO API URL CHUẨN ===
+    const API_URL = 'https://ocean-backend-lcpp.onrender.com';
 
     useEffect(() => {
-        const fetchOrderDetails = async () => {
+        const fetchOrder = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const config = {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                };
-                
-                const { data } = await axios.get(`https://ocean-backend-lcpp.onrender.com//api/orders/${orderId}`, config);
+                const config = { headers: { Authorization: `Bearer ${token}` } };
+
+                // === 2. GỌI API LẤY CHI TIẾT ĐƠN (Fix lỗi //) ===
+                const { data } = await axios.get(`${API_URL}/api/orders/${id}`, config);
                 setOrder(data);
                 setLoading(false);
-            } catch (err) {
-                setError(err.response?.data?.message || 'Không thể tải chi tiết đơn hàng');
+            } catch (error) {
+                console.error("Lỗi tải đơn hàng:", error);
                 setLoading(false);
             }
         };
 
-        fetchOrderDetails();
-    }, [orderId]);
+        if (id) {
+            fetchOrder();
+        }
+    }, [id]);
 
-    if (loading) return <div className="main-container">Đang tải thông tin đơn hàng...</div>;
-    if (error) return <div className="main-container" style={{ color: 'red' }}>{error}</div>;
-    if (!order) return null;
+    if (loading) return <div className="success-container">Đang tải thông tin đơn hàng...</div>;
+    
+    // Nếu không tìm thấy đơn (hoặc lỗi), vẫn hiện thông báo thành công nhưng không có chi tiết
+    if (!order) return (
+        <div className="success-container">
+            <div className="success-icon">🎉</div>
+            <h2>Đặt hàng thành công!</h2>
+            <p>Cảm ơn bạn đã mua sắm tại cửa hàng.</p>
+            <Link to="/" className="home-btn">Tiếp tục mua sắm</Link>
+        </div>
+    );
 
     return (
-        <div className="order-success-container">
-            <div className="success-header">
-                <h1>Đặt Hàng Thành Công!</h1>
-                <p>Cảm ơn bạn đã mua sắm tại OceanMobiStore.</p>
-            </div>
-
-            <div className="order-summary">
-                {/* 1. Mã đơn hàng */}
-                <div className="summary-section">
-                    <div className="section-title">Chi tiết đơn hàng</div>
-                    <div className="section-content">
-                        <p><strong>Mã đơn:</strong> #{order.id}</p>
-                        <p><strong>Ngày đặt:</strong> {new Date(order.ngay_dat_hang).toLocaleDateString('vi-VN')}</p>
-                        <p><strong>Tổng tiền:</strong> {new Intl.NumberFormat('vi-VN').format(order.tong_tien)} đ</p>
-                        <p><strong>Thanh toán:</strong> {order.phuong_thuc_thanh_toan}</p>
-                        <p><strong>Trạng thái:</strong> {order.trang_thai}</p>
-                    </div>
-                </div>
-
-                {/* 2. Thông tin khách hàng */}
-                <div className="summary-section">
-                    <div className="section-title">Thông tin khách hàng</div>
-                    <div className="section-content">
-                        {/* Lưu ý: dia_chi_giao_hang đã gộp cả tên, sđt, địa chỉ
-                          Nếu bạn muốn hiển thị tên user đăng ký, dùng order.User.ho_ten
-                        */}
-                        <p><strong>Người nhận:</strong> {order.User.ho_ten}</p>
-                        <p><strong>Email:</strong> {order.User.email}</p>
-                        <p><strong>Giao đến:</strong> {order.dia_chi_giao_hang}</p>
-                    </div>
+        <div className="success-container">
+            <div className="success-card">
+                <div className="success-header">
+                    <div className="success-icon">✅</div>
+                    <h2>Đặt hàng thành công!</h2>
+                    <p>Mã đơn hàng: <strong>#{order.id}</strong></p>
                 </div>
                 
-                {/* 3. Tên sản phẩm */}
-                <div className="summary-section">
-                    <div className="section-title">Sản phẩm đã đặt ({order.OrderItems.length})</div>
-                    <div className="section-content">
-                        {order.OrderItems.map(item => (
-                            <div key={item.id} className="product-item">
-                                <img src={item.Product.hinh_anh_url} alt={item.Product.ten_san_pham} />
-                                <div className="product-info">
-                                    <span>{item.Product.ten_san_pham}</span><br/>
-                                    <small>Số lượng: {item.so_luong}</small>
-                                </div>
-                                <div className="product-price">
-                                    {new Intl.NumberFormat('vi-VN').format(item.gia_luc_mua * item.so_luong)} đ
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                <div className="order-info">
+                    <p><strong>Người nhận:</strong> {order.shippingAddress}</p>
+                    <p><strong>Tổng tiền:</strong> <span className="highlight">{new Intl.NumberFormat('vi-VN').format(order.tong_tien)} đ</span></p>
+                    <p><strong>Phương thức:</strong> {order.paymentMethod}</p>
+                    <p><strong>Trạng thái:</strong> {order.trang_thai_thanh_toan ? 'Đã thanh toán' : 'Chưa thanh toán'}</p>
                 </div>
 
-                <div style={{textAlign: 'center', marginTop: '2rem'}}>
-                    <Link to="/" style={{padding: '10px 20px', background: '#0056b3', color: 'white', borderRadius: '5px'}}>
-                        Tiếp tục mua sắm
-                    </Link>
+                {/* Danh sách sản phẩm trong đơn (nếu có) */}
+                {order.OrderItems && order.OrderItems.length > 0 && (
+                    <div className="order-items-list">
+                        <h3>Sản phẩm đã mua:</h3>
+                        <ul>
+                            {order.OrderItems.map((item, index) => (
+                                <li key={index}>
+                                    {item.ten_san_pham} (x{item.so_luong})
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
+
+                <div className="action-buttons">
+                    <Link to="/" className="home-btn">Quay về Trang chủ</Link>
+                    <Link to="/profile" className="profile-btn">Xem lịch sử đơn hàng</Link>
                 </div>
             </div>
         </div>
