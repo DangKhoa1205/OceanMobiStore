@@ -1,18 +1,20 @@
 // backend/controllers/orderController.js
-
-// 1. Đảm bảo IMPORT đúng từ models/index.js
 const { Order, OrderItem, Product, User } = require('../models');
 
-// 1. TẠO ĐƠN HÀNG MỚI (Đã thêm logic Trừ Kho)
+// 1. TẠO ĐƠN HÀNG MỚI (Phiên bản Debug - Có Log kiểm tra)
 exports.createOrder = async (req, res) => {
+    console.log("--- BẮT ĐẦU TẠO ĐƠN HÀNG ---"); // Log 1
     const { cartItems, shippingAddress, totalPrice, paymentMethod } = req.body;
     
+    // Kiểm tra dữ liệu gửi lên
+    console.log("Dữ liệu giỏ hàng nhận được:", JSON.stringify(cartItems)); // Log 2
+
     if (cartItems && cartItems.length === 0) {
         return res.status(400).json({ message: 'Không có sản phẩm trong giỏ hàng' });
     }
 
     try {
-        // A. Tạo đơn hàng chính (Order)
+        // A. Tạo đơn hàng
         const order = await Order.create({
             user_id: req.user.id,
             tong_tien: totalPrice,
@@ -22,164 +24,50 @@ exports.createOrder = async (req, res) => {
             trang_thai_thanh_toan: paymentMethod === 'Momo' || paymentMethod === 'VNPay' ? true : false,
         });
 
-        // B. Tạo chi tiết đơn hàng VÀ Trừ kho
-        // Dùng vòng lặp for...of để xử lý tuần tự (an toàn hơn map)
+        console.log(`Đã tạo đơn hàng ID: ${order.id}`); // Log 3
+
+        // B. Tạo chi tiết & Trừ kho
         for (const item of cartItems) {
-            // 1. Lưu vào bảng OrderItem
+            // Lấy số lượng mua (Frontend gửi 'qty', ta đảm bảo chuyển thành Số)
+            const qtyToBuy = Number(item.qty); 
+            
+            // 1. Lưu OrderItem
             await OrderItem.create({
                 order_id: order.id,
                 product_id: item.id,
-                so_luong: item.qty,
+                so_luong: qtyToBuy,
                 gia_luc_mua: item.gia,
             });
 
-            // 2. === QUAN TRỌNG: TRỪ KHO ===
+            // 2. === TRỪ KHO (CÓ LOG KIỂM TRA) ===
             const product = await Product.findByPk(item.id);
+            
             if (product) {
-                // Trừ số lượng tồn kho
-                product.so_luong_ton = product.so_luong_ton - item.qty;
-                
-                // Đảm bảo không bị âm
-                if (product.so_luong_ton < 0) product.so_luong_ton = 0;
+                console.log(`>> Đang xử lý sản phẩm ID: ${item.id} (${product.ten_san_pham})`);
+                console.log(`   - Kho hiện tại: ${product.so_luong_ton}`);
+                console.log(`   - Khách mua: ${qtyToBuy}`);
 
-                // Lưu thay đổi vào Database
+                // Trừ kho
+                const newStock = Number(product.so_luong_ton) - qtyToBuy;
+                product.so_luong_ton = newStock < 0 ? 0 : newStock;
+
                 await product.save();
+                console.log(`   - Kho sau khi trừ: ${product.so_luong_ton}`); // Log quan trọng nhất
+            } else {
+                console.log(`ERROR: Không tìm thấy sản phẩm ID ${item.id} trong Database!`);
             }
         }
         
+        console.log("--- HOÀN TẤT ĐƠN HÀNG ---");
         res.status(201).json({ message: 'Tạo đơn hàng thành công', order: order });
 
     } catch (error) {
-        console.error("Lỗi khi tạo đơn hàng:", error);
+        console.error("LỖI KHI TẠO ĐƠN:", error);
         res.status(500).json({ message: "Lỗi server" });
     }
 };
 
-// 2. LẤY CHI TIẾT ĐƠN
-exports.getOrderById = async (req, res) => {
-    try {
-        const order = await Order.findByPk(req.params.id, {
-            include: [
-                { model: User, attributes: ['ho_ten', 'email'] },
-                {
-                    model: OrderItem,
-                    include: [
-                        { model: Product, attributes: ['ten_san_pham', 'hinh_anh_url', 'id'] }
-                    ]
-                }
-            ]
-        });
-
-        if (!order) {
-            return res.status(404).json({ message: 'Không tìm thấy đơn hàng' });
-        }
-        
-        // Bảo mật: Chỉ chủ đơn hàng hoặc admin mới được xem
-        if (req.user.role !== 'admin' && order.user_id !== req.user.id) {
-             return res.status(403).json({ message: 'Không có quyền xem đơn hàng này' });
-        }
-
-        res.status(200).json(order);
-    } catch (error) {
-        console.error("Lỗi khi lấy chi tiết đơn:", error);
-        res.status(500).json({ message: "Lỗi server" });
-    }
-};
-
-// 3. TRA CỨU ĐƠN (PUBLIC)
-exports.lookupOrder = async (req, res) => {
-    const { orderId, phone } = req.body;
-    try {
-        const order = await Order.findByPk(orderId, {
-             include: [
-                { model: User, attributes: ['ho_ten', 'email'] },
-                {
-                    model: OrderItem,
-                    include: [
-                        { model: Product, attributes: ['ten_san_pham', 'hinh_anh_url', 'id'] }
-                    ]
-                }
-            ]
-        });
-
-        if (!order) {
-            return res.status(404).json({ message: 'Không tìm thấy đơn hàng' });
-        }
-
-        if (!order.dia_chi_giao_hang.includes(phone)) {
-            return res.status(404).json({ message: 'Thông tin tra cứu không khớp' });
-        }
-        
-        res.status(200).json(order);
-    } catch (error) {
-        console.error("Lỗi khi tra cứu:", error);
-        res.status(500).json({ message: "Lỗi server" });
-    }
-};
-
-// 4. LẤY TẤT CẢ ĐƠN (ADMIN)
-exports.getAllOrders = async (req, res) => {
-    try {
-        const orders = await Order.findAll({
-            include: [{
-                model: User,
-                attributes: ['ho_ten', 'email']
-            }],
-            order: [['createdAt', 'DESC']] // Sửa 'ngay_dat_hang' thành 'createdAt' nếu dùng default timestamp
-        });
-        res.status(200).json(orders);
-    } catch (error) {
-        console.error("Lỗi khi lấy tất cả đơn hàng:", error);
-        res.status(500).json({ message: "Lỗi server" });
-    }
-};
-
-// 5. CẬP NHẬT TRẠNG THÁI (ADMIN)
-exports.updateOrderStatus = async (req, res) => {
-    try {
-        const { status } = req.body;
-        const order = await Order.findByPk(req.params.id);
-
-        if (!order) {
-            return res.status(404).json({ message: 'Không tìm thấy đơn hàng' });
-        }
-
-        order.trang_thai = status;
-        // Nếu là trạng thái 'Delivered' (Đã giao), có thể cập nhật luôn trang_thai_giao_hang = true
-        if (status === 'Delivered') {
-            order.trang_thai_giao_hang = true;
-        }
-
-        await order.save();
-        
-        res.status(200).json({ message: 'Cập nhật trạng thái thành công', order });
-
-    } catch (error) {
-        console.error("Lỗi khi cập nhật trạng thái:", error);
-        res.status(500).json({ message: "Lỗi server" });
-    }
-};
-
-// 6. LẤY ĐƠN HÀNG CỦA TÔI (USER)
-exports.getMyOrders = async (req, res) => {
-    try {
-        const orders = await Order.findAll({
-            where: { user_id: req.user.id }, 
-            order: [['createdAt', 'DESC']], 
-            include: [
-                {
-                    model: OrderItem,
-                    include: [
-                        { model: Product, attributes: ['ten_san_pham', 'hinh_anh_url', 'id'] }
-                    ]
-                }
-            ]
-        });
-        
-        res.status(200).json(orders); 
-
-    } catch (error) {
-        console.error("Lỗi khi lấy đơn hàng của tôi:", error);
-        res.status(500).json({ message: "Lỗi server" });
-    }
-};
+// ... (GIỮ NGUYÊN CÁC HÀM KHÁC: getOrderById, lookupOrder, etc.)
+// Copy nốt các hàm bên dưới từ file cũ của bạn vào đây nhé
+// Hoặc nếu bạn muốn tôi gửi full file thì báo tôi.
+// (Để ngắn gọn tôi chỉ gửi hàm bị lỗi logic thôi)
